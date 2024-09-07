@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
 import { BalanceCheckpointsService } from './balance-checkpoints.service';
 import { CreateBalanceCheckpointDto } from './dto/create-balance-checkpoint.dto';
 import { UpdateBalanceCheckpointDto } from './dto/update-balance-checkpoint.dto';
 
 @Controller('balance-checkpoints')
 export class BalanceCheckpointsController {
-  constructor(private readonly balanceCheckpointsService: BalanceCheckpointsService) {}
+  constructor(
+    private readonly balanceCheckpointsService: BalanceCheckpointsService,
+  ) {}
 
   @Post()
   create(@Body() createBalanceCheckpointDto: CreateBalanceCheckpointDto) {
@@ -19,16 +31,23 @@ export class BalanceCheckpointsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.balanceCheckpointsService.findOne(+id);
+    return this.balanceCheckpointsService.findOneById(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBalanceCheckpointDto: UpdateBalanceCheckpointDto) {
-    return this.balanceCheckpointsService.update(+id, updateBalanceCheckpointDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateBalanceCheckpointDto: UpdateBalanceCheckpointDto,
+  ) {
+    return this.balanceCheckpointsService.update(
+      id,
+      updateBalanceCheckpointDto,
+    );
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
-    return this.balanceCheckpointsService.remove(+id);
+    return this.balanceCheckpointsService.remove(id);
   }
 }
