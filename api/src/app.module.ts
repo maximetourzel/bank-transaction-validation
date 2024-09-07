@@ -7,6 +7,7 @@ import { BankSyncValidationsModule } from './bank-sync-validations/bank-sync-val
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
+import { PeriodsModule } from './periods/periods.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { typeOrmConfig } from './config/typeorm.config';
     BankMovementsModule,
     BalanceCheckpointsModule,
     BankSyncValidationsModule,
+    PeriodsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
