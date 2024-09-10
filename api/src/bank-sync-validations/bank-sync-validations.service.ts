@@ -26,6 +26,11 @@ export class BankSyncValidationsService {
     private readonly balanceCheckpointsService: BalanceCheckpointsService,
   ) {}
 
+  /**
+   * Finds all bank sync validations, with their relations.
+   *
+   * @returns a promise of an array of bank sync validations
+   */
   async findAll(): Promise<BankSyncValidation[]> {
     return this.bankSyncValidationRepository.find({
       relations: {
@@ -36,12 +41,25 @@ export class BankSyncValidationsService {
     });
   }
 
+  /**
+   * Finds a bank sync validation by its period id.
+   *
+   * @param periodId the id of the period to find the validation for
+   * @returns a promise of the bank sync validation
+   */
   findOneByPeriodId(periodId: string): Promise<BankSyncValidation> {
     return this.bankSyncValidationRepository.findOne({
       where: { period: { id: periodId } },
     });
   }
 
+  /**
+   * Finds a bank sync validation by its id.
+   *
+   * @param id the id of the bank sync validation to find
+   * @returns a promise of the bank sync validation
+   * @throws {NotFoundException} if the bank sync validation with the given id is not found
+   */
   async findOne(id: string): Promise<BankSyncValidation> {
     const validation = await this.bankSyncValidationRepository.findOneBy({
       id,
@@ -52,7 +70,22 @@ export class BankSyncValidationsService {
     return validation;
   }
 
-  async create(periodId: string) {
+  /**
+   * Creates a new bank sync validation for the given period.
+   *
+   * If there is already a validation for the given period, it will be marked as
+   * historical.
+   *
+   * The new validation will contain all movements and checkpoints in the given
+   * period, and will have the isValid flag set to whether the movements and
+   * checkpoints are valid.
+   *
+   * If the validation is not valid, it will contain the validation errors.
+   *
+   * @param periodId the id of the period to create the validation for
+   * @returns a promise of the newly created bank sync validation
+   */
+  async create(periodId: string): Promise<BankSyncValidation> {
     const existingValidation = await this.findOneByPeriodId(periodId);
     if (existingValidation) {
       existingValidation.isHistorical = true;
@@ -82,6 +115,23 @@ export class BankSyncValidationsService {
     return this.bankSyncValidationRepository.save(validationResult);
   }
 
+  /**
+   * Validates a set of bank movements against a set of balance checkpoints.
+   *
+   * The validation checks that there are no missing movements, that there are no
+   * missing checkpoints, and that the balance of the movements matches the
+   * balance of the checkpoints.
+   *
+   * If the validation is successful, the function returns an object with
+   * `isValid` set to `true` and an empty array of `errors`.
+   * If the validation fails, the function returns an object with
+   * `isValid` set to `false` and an
+   * array of `errors` containing the validation errors.
+   *
+   * @param movements the bank movements to validate
+   * @param checkpoints the balance checkpoints to validate against
+   * @returns an object with `isValid` and `errors` properties
+   */
   private validateMovementsAgainstCheckpoints(
     movements: BankMovement[],
     checkpoints: BalanceCheckpoint[],
@@ -111,6 +161,12 @@ export class BankSyncValidationsService {
     return { isValid: errors.length === 0, errors };
   }
 
+  /**
+   * Checks if there are any balance checkpoints.
+   *
+   * @param checkpoints the balance checkpoints to check
+   * @returns a MissingCheckpointError if there are no balance checkpoints
+   */
   private checkMissingCheckpoints(
     checkpoints: BalanceCheckpoint[],
   ): MissingCheckpointError {
@@ -122,6 +178,12 @@ export class BankSyncValidationsService {
     }
   }
 
+  /**
+   * Checks if there are any bank movements.
+   *
+   * @param movements the bank movements to check
+   * @returns a MissingMovementsError if there are no bank movements
+   */
   private checkMissingMovements(
     movements: BankMovement[],
   ): MissingMovementsError {
@@ -133,6 +195,15 @@ export class BankSyncValidationsService {
     }
   }
 
+  /**
+   * Checks if the final balance of the most recent checkpoint matches the
+   * calculated balance of all movements.
+   *
+   * @param checkpoints the balance checkpoints to check
+   * @param movements the bank movements to check
+   * @returns a BalanceMismatchError if the final balance does not match the
+   * calculated balance
+   */
   private checkBalanceMismatch(
     checkpoints: BalanceCheckpoint[],
     movements: BankMovement[],
@@ -154,6 +225,14 @@ export class BankSyncValidationsService {
     }
   }
 
+  /**
+   * Checks if there are potential duplicate movements.
+   *
+   * It will consider a movement as a duplicate if it has the same date, amount and wording.
+   *
+   * @param movements the bank movements to check
+   * @returns an array of PotentialMovementDuplicateError containing the IDs of the potential duplicate movements
+   */
   private checkDuplicateMovements(
     movements: BankMovement[],
   ): PotentialMovementDuplicateError[] {
@@ -185,6 +264,13 @@ export class BankSyncValidationsService {
     return errors;
   }
 
+  /**
+   * Removes a bank sync validation.
+   *
+   * @param id the id of the bank sync validation to remove
+   * @returns a promise of the removed bank sync validation
+   * @throws {NotFoundException} if the bank sync validation with the given id is not found
+   */
   async remove(id: string) {
     const validation = await this.findOne(id);
     await this.bankSyncValidationRepository.remove(validation);
