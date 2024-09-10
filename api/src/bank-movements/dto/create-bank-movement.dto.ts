@@ -1,8 +1,8 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsISO8601, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateBankMovementDto {
   @IsNotEmpty()
-  @IsDate()
+  @IsISO8601({ strict: false })
   date: Date;
 
   @IsNotEmpty()

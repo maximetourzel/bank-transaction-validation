@@ -3,22 +3,39 @@ import { CreateBankMovementDto } from './dto/create-bank-movement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankMovement } from './entities/bank-movement.entity';
 import { Repository } from 'typeorm';
+import { PeriodsService } from 'src/periods/periods.service';
 
 @Injectable()
 export class BankMovementsService {
   constructor(
     @InjectRepository(BankMovement)
     private readonly bankMovementsRepository: Repository<BankMovement>,
+    private readonly periodsService: PeriodsService,
   ) {}
-  create(createBankMovementDto: CreateBankMovementDto): Promise<BankMovement> {
-    const newBankMovement = this.bankMovementsRepository.create(
-      createBankMovementDto,
-    );
+  async create(
+    periodId: string,
+    createBankMovementDto: CreateBankMovementDto,
+  ): Promise<BankMovement> {
+    const period = await this.periodsService.findOneById(periodId);
+    //TODO: verify if createBankMovementDto.date is in period
+
+    const newBankMovement = this.bankMovementsRepository.create({
+      ...createBankMovementDto,
+      period,
+    });
     return this.bankMovementsRepository.save(newBankMovement);
   }
 
-  findAll() {
-    return this.bankMovementsRepository.find();
+  findAllForPeriod(periodId: string): Promise<BankMovement[]> {
+    return this.bankMovementsRepository.find({
+      where: { period: { id: periodId } },
+    });
+  }
+
+  findByPeriodId(periodId: string): Promise<BankMovement[]> {
+    return this.bankMovementsRepository.find({
+      where: { period: { id: periodId } },
+    });
   }
 
   findOneById(id: string): Promise<BankMovement> {
