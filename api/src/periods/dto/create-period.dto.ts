@@ -1,5 +1,4 @@
 import { IsInt, IsNotEmpty, IsString, Min, IsIn } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class CreatePeriodDto {
   @IsInt()
@@ -23,22 +22,5 @@ export class CreatePeriodDto {
     'novembre',
     'décembre',
   ])
-  @Transform(({ value }) => {
-    const months = [
-      'janvier',
-      'février',
-      'mars',
-      'avril',
-      'mai',
-      'juin',
-      'juillet',
-      'août',
-      'septembre',
-      'octobre',
-      'novembre',
-      'décembre',
-    ];
-    return months.indexOf(value.toLowerCase()) + 1;
-  })
-  readonly month: number;
+  readonly month: string;
 }
