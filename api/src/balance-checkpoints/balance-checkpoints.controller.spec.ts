@@ -11,7 +11,9 @@ describe('BalanceCheckpointsController', () => {
       providers: [BalanceCheckpointsService],
     }).compile();
 
-    controller = module.get<BalanceCheckpointsController>(BalanceCheckpointsController);
+    controller = module.get<BalanceCheckpointsController>(
+      BalanceCheckpointsController,
+    );
   });
 
   it('should be defined', () => {

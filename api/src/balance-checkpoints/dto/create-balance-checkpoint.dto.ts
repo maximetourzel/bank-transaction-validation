@@ -1,8 +1,8 @@
-import { IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsISO8601, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateBalanceCheckpointDto {
   @IsNotEmpty()
-  @IsDate()
+  @IsISO8601({ strict: false })
   date: Date;
 
   @IsNotEmpty()

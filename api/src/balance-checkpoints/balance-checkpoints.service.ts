@@ -4,24 +4,33 @@ import { UpdateBalanceCheckpointDto } from './dto/update-balance-checkpoint.dto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { BalanceCheckpoint } from './entities/balance-checkpoint.entity';
 import { Repository } from 'typeorm';
+import { PeriodsService } from 'src/periods/periods.service';
 
 @Injectable()
 export class BalanceCheckpointsService {
   constructor(
     @InjectRepository(BalanceCheckpoint)
     private readonly balanceCheckpointsRepository: Repository<BalanceCheckpoint>,
+    private readonly periodsService: PeriodsService,
   ) {}
-  create(
+  async create(
+    periodId: string,
     createBalanceCheckpointDto: CreateBalanceCheckpointDto,
   ): Promise<BalanceCheckpoint> {
-    const newBalanceCheckpoint = this.balanceCheckpointsRepository.create(
-      createBalanceCheckpointDto,
-    );
+    const period = await this.periodsService.findOneById(periodId);
+    //TODO: verify if createBalanceCheckpointDto.date is in period
+
+    const newBalanceCheckpoint = this.balanceCheckpointsRepository.create({
+      ...createBalanceCheckpointDto,
+      period,
+    });
     return this.balanceCheckpointsRepository.save(newBalanceCheckpoint);
   }
 
-  findAll(): Promise<BalanceCheckpoint[]> {
-    return this.balanceCheckpointsRepository.find();
+  findByPeriodId(periodId: string): Promise<BalanceCheckpoint[]> {
+    return this.balanceCheckpointsRepository.find({
+      where: { period: { id: periodId } },
+    });
   }
 
   findOneById(id: string): Promise<BalanceCheckpoint> {
