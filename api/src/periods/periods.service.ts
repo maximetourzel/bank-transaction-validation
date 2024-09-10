@@ -15,6 +15,14 @@ export class PeriodsService {
     @InjectRepository(Period)
     private readonly periodRepository: Repository<Period>,
   ) {}
+
+  /**
+   * Creates a new period.
+   *
+   * @param createPeriodDto The data for the new period.
+   * @returns The newly created period.
+   * @throws {ConflictException} If a period with the same year and month already exists.
+   */
   async create(createPeriodDto: CreatePeriodDto): Promise<Period> {
     const period = plainToInstance(Period, createPeriodDto, {
       excludeExtraneousValues: true,
@@ -30,10 +38,22 @@ export class PeriodsService {
     }
   }
 
+  /**
+   * Finds all periods.
+   *
+   * @returns A promise of an array of periods.
+   */
   findAll(): Promise<Period[]> {
     return this.periodRepository.find();
   }
 
+  /**
+   * Finds a period by id.
+   *
+   * @param id The id of the period to find.
+   * @returns The period with the given id.
+   * @throws {NotFoundException} If no period with the given id exists.
+   */
   async findOneById(id: string): Promise<Period> {
     const period = await this.periodRepository.findOneBy({ id });
     if (!period) {
@@ -42,6 +62,13 @@ export class PeriodsService {
     return period;
   }
 
+  /**
+   * Removes a period.
+   *
+   * @param id The id of the period to remove.
+   * @returns The removed period.
+   * @throws {NotFoundException} If no period with the given id exists.
+   */
   async remove(id: string): Promise<Period> {
     const periodToRemove = await this.findOneById(id);
     return this.periodRepository.remove(periodToRemove);
