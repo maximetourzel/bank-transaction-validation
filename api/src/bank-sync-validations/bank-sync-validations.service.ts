@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BalanceCheckpoint } from 'src/balance-checkpoints/entities/balance-checkpoint.entity';
 import { BankMovement } from 'src/bank-movements/entities/bank-movement.entity';
@@ -43,7 +43,13 @@ export class BankSyncValidationsService {
   }
 
   async findOne(id: string): Promise<BankSyncValidation> {
-    return this.bankSyncValidationRepository.findOneBy({ id });
+    const validation = await this.bankSyncValidationRepository.findOneBy({
+      id,
+    });
+    if (!validation) {
+      throw new NotFoundException(`Validation with id ${id} not found`);
+    }
+    return validation;
   }
 
   async create(periodId: string) {
