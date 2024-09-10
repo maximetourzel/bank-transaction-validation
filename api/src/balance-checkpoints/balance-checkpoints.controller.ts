@@ -12,34 +12,55 @@ import {
 import { BalanceCheckpointsService } from './balance-checkpoints.service';
 import { CreateBalanceCheckpointDto } from './dto/create-balance-checkpoint.dto';
 import { UpdateBalanceCheckpointDto } from './dto/update-balance-checkpoint.dto';
+import {
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { BalanceCheckpoint } from './entities/balance-checkpoint.entity';
 
+@ApiTags('balance-checkpoints')
 @Controller()
 export class BalanceCheckpointsController {
   constructor(
     private readonly balanceCheckpointsService: BalanceCheckpointsService,
   ) {}
 
+  @ApiCreatedResponse({
+    description: 'The balance checkpoint has been successfully created',
+  })
   @Post('periods/:periodId/checkpoints')
   create(
     @Param('periodId') periodId: string,
     @Body() createBalanceCheckpointDto: CreateBalanceCheckpointDto,
-  ) {
+  ): Promise<BalanceCheckpoint> {
     return this.balanceCheckpointsService.create(
       periodId,
       createBalanceCheckpointDto,
     );
   }
 
+  @ApiOkResponse({
+    description: 'The list of balance checkpoints for the period',
+  })
   @Get('periods/:periodId/checkpoints')
   findAllForPeriod(@Param('periodId') periodId: string) {
     return this.balanceCheckpointsService.findByPeriodId(periodId);
   }
 
+  @ApiOkResponse({
+    description: 'The balance checkpoint with the given id',
+  })
   @Get('checkpoints/:id')
   findOne(@Param('id') id: string) {
     return this.balanceCheckpointsService.findOneById(id);
   }
 
+  @ApiOkResponse({
+    description: 'The balance checkpoint has been successfully updated',
+  })
   @Patch('checkpoints/:id')
   update(
     @Param('id') id: string,
@@ -51,6 +72,12 @@ export class BalanceCheckpointsController {
     );
   }
 
+  @ApiNoContentResponse({
+    description: 'The balance checkpoint has been successfully removed',
+  })
+  @ApiNotFoundResponse({
+    description: 'The balance checkpoint was not found',
+  })
   @Delete('checkpoints/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
