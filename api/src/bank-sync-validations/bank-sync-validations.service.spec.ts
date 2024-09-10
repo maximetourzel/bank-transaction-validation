@@ -9,7 +9,9 @@ describe('BankSyncValidationsService', () => {
       providers: [BankSyncValidationsService],
     }).compile();
 
-    service = module.get<BankSyncValidationsService>(BankSyncValidationsService);
+    service = module.get<BankSyncValidationsService>(
+      BankSyncValidationsService,
+    );
   });
 
   it('should be defined', () => {

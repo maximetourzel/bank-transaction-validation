@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { BankSyncValidationsService } from './bank-sync-validations.service';
-import { CreateBankSyncValidationDto } from './dto/create-bank-sync-validation.dto';
-import { UpdateBankSyncValidationDto } from './dto/update-bank-sync-validation.dto';
+import { BankSyncValidation } from './entities/bank-sync-validation.entity';
 
-@Controller('bank-sync-validations')
+@Controller()
 export class BankSyncValidationsController {
-  constructor(private readonly bankSyncValidationsService: BankSyncValidationsService) {}
+  constructor(
+    private readonly bankSyncValidationsService: BankSyncValidationsService,
+  ) {}
 
-  @Post()
-  create(@Body() createBankSyncValidationDto: CreateBankSyncValidationDto) {
-    return this.bankSyncValidationsService.create(createBankSyncValidationDto);
+  @Post('periods/:periodId/validations')
+  create(@Param('periodId') periodId: string): Promise<BankSyncValidation> {
+    return this.bankSyncValidationsService.create(periodId);
   }
 
-  @Get()
-  findAll() {
-    return this.bankSyncValidationsService.findAll();
+  @Get('periods/:periodId/validations')
+  findOneByPeriod(
+    @Param('periodId') periodId: string,
+  ): Promise<BankSyncValidation> {
+    return this.bankSyncValidationsService.findOneByPeriodId(periodId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bankSyncValidationsService.findOne(+id);
+  @Get('validations/:validationId')
+  findOne(
+    @Param('validationId') validationId: string,
+  ): Promise<BankSyncValidation> {
+    return this.bankSyncValidationsService.findOne(validationId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBankSyncValidationDto: UpdateBankSyncValidationDto) {
-    return this.bankSyncValidationsService.update(+id, updateBankSyncValidationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bankSyncValidationsService.remove(+id);
+  @Delete('validations/:validationId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('validationId') validationId: string): Promise<void> {
+    await this.bankSyncValidationsService.remove(validationId);
   }
 }

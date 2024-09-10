@@ -11,7 +11,9 @@ describe('BankSyncValidationsController', () => {
       providers: [BankSyncValidationsService],
     }).compile();
 
-    controller = module.get<BankSyncValidationsController>(BankSyncValidationsController);
+    controller = module.get<BankSyncValidationsController>(
+      BankSyncValidationsController,
+    );
   });
 
   it('should be defined', () => {
