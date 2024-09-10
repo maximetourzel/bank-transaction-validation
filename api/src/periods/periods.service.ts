@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePeriodDto } from './dto/create-period.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Period } from './entities/period.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -11,11 +15,19 @@ export class PeriodsService {
     @InjectRepository(Period)
     private readonly periodRepository: Repository<Period>,
   ) {}
-  async create(createPeriodDto: CreatePeriodDto): Promise<any> {
+  async create(createPeriodDto: CreatePeriodDto): Promise<Period> {
     const period = plainToInstance(Period, createPeriodDto, {
       excludeExtraneousValues: true,
     });
-    return this.periodRepository.save(period);
+    try {
+      return await this.periodRepository.save(period);
+    } catch (err) {
+      if (err instanceof QueryFailedError) {
+        if (err.driverError.code === '23505') {
+          throw new ConflictException('Period already exists');
+        }
+      }
+    }
   }
 
   findAll(): Promise<Period[]> {

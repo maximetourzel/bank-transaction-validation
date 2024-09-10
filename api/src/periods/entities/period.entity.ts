@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
   Entity,
@@ -7,21 +8,39 @@ import {
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
+import { PeriodMonth } from '../enums/period-month.enum';
 
 @Entity()
 @Unique(['year', 'month']) // Empêche les doublons pour une combinaison spécifique de year/month
 export class Period {
+  @ApiProperty({
+    example: 'b2c8c9b6-0b7a-4a6f-9c1d-2e3f4a5b6c7d',
+    description: 'The id of the period',
+  })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({
+    example: 2024,
+    description: 'The year of the period',
+  })
   @Expose()
   @Column({ type: 'int' })
   year: number;
 
+  @ApiProperty({
+    enum: PeriodMonth,
+    example: 'septembre',
+    description: 'The month of the period',
+  })
   @Expose()
   @Column({ type: 'varchar' })
   month: string;
 
+  @ApiProperty({
+    example: '2024-09-01',
+    description: 'The start date of the period',
+  })
   @Expose()
   @Column({ type: 'date' })
   startDate: Date;
@@ -36,6 +55,10 @@ export class Period {
     );
   }
 
+  @ApiProperty({
+    example: '2024-09-30',
+    description: 'The end date of the period',
+  })
   @Expose()
   @Column({ type: 'date' })
   endDate: Date;
