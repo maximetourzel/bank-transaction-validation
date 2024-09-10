@@ -23,12 +23,12 @@ export class PeriodsService {
    * @returns The newly created period.
    * @throws {ConflictException} If a period with the same year and month already exists.
    */
-  async create(createPeriodDto: CreatePeriodDto): Promise<Period> {
+  create(createPeriodDto: CreatePeriodDto): Promise<Period> {
     const period = plainToInstance(Period, createPeriodDto, {
       excludeExtraneousValues: true,
     });
     try {
-      return await this.periodRepository.save(period);
+      return this.periodRepository.save(period);
     } catch (err) {
       if (err instanceof QueryFailedError) {
         if (err.driverError.code === '23505') {
