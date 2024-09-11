@@ -4,7 +4,7 @@ import { UpdateBalanceCheckpointDto } from './dto/update-balance-checkpoint.dto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { BalanceCheckpoint } from './entities/balance-checkpoint.entity';
 import { Repository } from 'typeorm';
-import { PeriodsService } from 'src/periods/periods.service';
+import { PeriodsService } from '../periods/periods.service';
 
 @Injectable()
 export class BalanceCheckpointsService {
@@ -54,10 +54,12 @@ export class BalanceCheckpointsService {
    * @returns The balance checkpoint with the given id.
    * @throws {NotFoundException} If no balance checkpoint with the given id exists.
    */
-  findOneById(id: string): Promise<BalanceCheckpoint> {
-    const balanceCheckpoint = this.balanceCheckpointsRepository.findOneBy({
-      id,
-    });
+  async findOneById(id: string): Promise<BalanceCheckpoint> {
+    const balanceCheckpoint = await this.balanceCheckpointsRepository.findOneBy(
+      {
+        id,
+      },
+    );
     if (!balanceCheckpoint) {
       throw new NotFoundException(`BalanceCheckpoint with id ${id} not found`);
     }
