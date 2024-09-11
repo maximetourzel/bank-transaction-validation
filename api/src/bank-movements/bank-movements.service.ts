@@ -3,7 +3,7 @@ import { CreateBankMovementDto } from './dto/create-bank-movement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankMovement } from './entities/bank-movement.entity';
 import { Repository } from 'typeorm';
-import { PeriodsService } from 'src/periods/periods.service';
+import { PeriodsService } from '../periods/periods.service';
 
 @Injectable()
 export class BankMovementsService {
@@ -62,8 +62,8 @@ export class BankMovementsService {
    * @returns a promise of the bank movement
    * @throws {NotFoundException} if the bank movement with the given id is not found
    */
-  findOneById(id: string): Promise<BankMovement> {
-    const bankMovement = this.bankMovementsRepository.findOneBy({ id });
+  async findOneById(id: string): Promise<BankMovement> {
+    const bankMovement = await this.bankMovementsRepository.findOneBy({ id });
     if (!bankMovement) {
       throw new NotFoundException(`BankMovement with id ${id} not found`);
     }

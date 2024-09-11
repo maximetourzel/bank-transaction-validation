@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { BankSyncValidation } from 'src/bank-sync-validations/entities/bank-sync-validation.entity';
-import { Period } from 'src/periods/entities/period.entity';
+import { BankSyncValidation } from '../../bank-sync-validations/entities/bank-sync-validation.entity';
+import { Period } from '../../periods/entities/period.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

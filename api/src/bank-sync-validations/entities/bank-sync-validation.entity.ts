@@ -6,9 +6,9 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { BankMovement } from 'src/bank-movements/entities/bank-movement.entity';
-import { BalanceCheckpoint } from 'src/balance-checkpoints/entities/balance-checkpoint.entity';
-import { Period } from 'src/periods/entities/period.entity';
+import { BankMovement } from '../../bank-movements/entities/bank-movement.entity';
+import { BalanceCheckpoint } from '../../balance-checkpoints/entities/balance-checkpoint.entity';
+import { Period } from '../../periods/entities/period.entity';
 import { ValidationError } from '../interfaces/validation-error.interface';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
