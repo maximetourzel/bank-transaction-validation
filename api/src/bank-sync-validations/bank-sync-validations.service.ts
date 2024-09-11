@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BalanceCheckpoint } from 'src/balance-checkpoints/entities/balance-checkpoint.entity';
-import { BankMovement } from 'src/bank-movements/entities/bank-movement.entity';
+import { BalanceCheckpoint } from '../balance-checkpoints/entities/balance-checkpoint.entity';
+import { BankMovement } from '../bank-movements/entities/bank-movement.entity';
 import { Repository } from 'typeorm';
 import { BankSyncValidation } from './entities/bank-sync-validation.entity';
 import {
@@ -10,11 +10,10 @@ import {
   MissingMovementsError,
   PotentialMovementDuplicateError,
   ValidationError,
-} from './interfaces/validation-error.interface';
-import { PeriodsService } from 'src/periods/periods.service';
-import { BankMovementsService } from 'src/bank-movements/bank-movements.service';
-import { BalanceCheckpointsService } from 'src/balance-checkpoints/balance-checkpoints.service';
-import { ValidationErrorType } from './enums/validation-error-type.enum';
+} from './models/validation-error';
+import { PeriodsService } from '../periods/periods.service';
+import { BankMovementsService } from '../bank-movements/bank-movements.service';
+import { BalanceCheckpointsService } from '../balance-checkpoints/balance-checkpoints.service';
 
 @Injectable()
 export class BankSyncValidationsService {
@@ -95,7 +94,6 @@ export class BankSyncValidationsService {
     const period = await this.periodsService.findOneById(periodId);
 
     const movements = await this.bankMovementsService.findByPeriodId(periodId);
-
     const checkpoints =
       await this.balanceCheckpointsService.findByPeriodId(periodId);
 
@@ -132,7 +130,7 @@ export class BankSyncValidationsService {
    * @param checkpoints the balance checkpoints to validate against
    * @returns an object with `isValid` and `errors` properties
    */
-  private validateMovementsAgainstCheckpoints(
+  validateMovementsAgainstCheckpoints(
     movements: BankMovement[],
     checkpoints: BalanceCheckpoint[],
   ): { isValid: boolean; errors: ValidationError[] } {
@@ -167,14 +165,11 @@ export class BankSyncValidationsService {
    * @param checkpoints the balance checkpoints to check
    * @returns a MissingCheckpointError if there are no balance checkpoints
    */
-  private checkMissingCheckpoints(
+  checkMissingCheckpoints(
     checkpoints: BalanceCheckpoint[],
   ): MissingCheckpointError {
     if (checkpoints.length === 0) {
-      return {
-        type: ValidationErrorType.MISSING_CHECKPOINT,
-        message: 'No checkpoints found',
-      };
+      return new MissingCheckpointError();
     }
   }
 
@@ -184,14 +179,9 @@ export class BankSyncValidationsService {
    * @param movements the bank movements to check
    * @returns a MissingMovementsError if there are no bank movements
    */
-  private checkMissingMovements(
-    movements: BankMovement[],
-  ): MissingMovementsError {
+  checkMissingMovements(movements: BankMovement[]): MissingMovementsError {
     if (movements.length === 0) {
-      return {
-        type: ValidationErrorType.MISSING_MOVEMENTS,
-        message: 'No movements found',
-      };
+      return new MissingMovementsError();
     }
   }
 
@@ -204,10 +194,13 @@ export class BankSyncValidationsService {
    * @returns a BalanceMismatchError if the final balance does not match the
    * calculated balance
    */
-  private checkBalanceMismatch(
+  checkBalanceMismatch(
     checkpoints: BalanceCheckpoint[],
     movements: BankMovement[],
   ): BalanceMismatchError {
+    if (checkpoints.length === 0 || movements.length === 0) {
+      return;
+    }
     // TODO: get most recent checkpoint balance
     const finalBalance = checkpoints[checkpoints.length - 1].balance;
     const calculatedBalance = movements.reduce(
@@ -216,12 +209,7 @@ export class BankSyncValidationsService {
     );
 
     if (finalBalance !== calculatedBalance) {
-      return {
-        type: ValidationErrorType.BALANCE_MISMATCH,
-        message: 'Final balance does not match calculated balance',
-        expectedBalance: finalBalance,
-        actualBalance: calculatedBalance,
-      };
+      return new BalanceMismatchError(finalBalance, calculatedBalance);
     }
   }
 
@@ -233,7 +221,7 @@ export class BankSyncValidationsService {
    * @param movements the bank movements to check
    * @returns an array of PotentialMovementDuplicateError containing the IDs of the potential duplicate movements
    */
-  private checkDuplicateMovements(
+  checkDuplicateMovements(
     movements: BankMovement[],
   ): PotentialMovementDuplicateError[] {
     const errors: PotentialMovementDuplicateError[] = [];
@@ -246,16 +234,14 @@ export class BankSyncValidationsService {
         seenMovements.get(key)?.push(movement.id);
 
         // Vérifie si l'erreur existe déjà
-        const existingErrorIndex = errors.findIndex((error) =>
+        const existingError = errors.find((error) =>
           error.movementIds.includes(movement.id),
         );
 
-        if (existingErrorIndex === -1) {
-          errors.push({
-            type: ValidationErrorType.POTENTIAL_MOVEMENT_DUPLICATE,
-            message: `Potential duplicate movements detected for date:  ${movement.date}, amount: ${movement.amount}, wording: ${movement.wording}`,
-            movementIds: seenMovements.get(key)!, // Stocke tous les IDs des doublons
-          });
+        if (!existingError) {
+          errors.push(
+            new PotentialMovementDuplicateError(seenMovements.get(key)!),
+          );
         }
       } else {
         seenMovements.set(key, [movement.id]);

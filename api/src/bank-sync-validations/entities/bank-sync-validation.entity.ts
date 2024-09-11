@@ -9,7 +9,7 @@ import {
 import { BankMovement } from '../../bank-movements/entities/bank-movement.entity';
 import { BalanceCheckpoint } from '../../balance-checkpoints/entities/balance-checkpoint.entity';
 import { Period } from '../../periods/entities/period.entity';
-import { ValidationError } from '../interfaces/validation-error.interface';
+import { ValidationError } from '../models/validation-error';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 @Entity()
