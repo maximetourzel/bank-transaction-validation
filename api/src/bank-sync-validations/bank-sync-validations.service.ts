@@ -6,14 +6,17 @@ import { Repository } from 'typeorm';
 import { BankSyncValidation } from './entities/bank-sync-validation.entity';
 import {
   BalanceMismatchError,
+  InconsistentDateError,
   MissingCheckpointError,
   MissingMovementsError,
   PotentialMovementDuplicateError,
+  UnexpectedAmountError,
   ValidationError,
 } from './models/validation-error';
 import { PeriodsService } from '../periods/periods.service';
 import { BankMovementsService } from '../bank-movements/bank-movements.service';
 import { BalanceCheckpointsService } from '../balance-checkpoints/balance-checkpoints.service';
+import { Period } from 'src/periods/entities/period.entity';
 
 @Injectable()
 export class BankSyncValidationsService {
@@ -49,6 +52,7 @@ export class BankSyncValidationsService {
   findOneByPeriodId(periodId: string): Promise<BankSyncValidation> {
     return this.bankSyncValidationRepository.findOne({
       where: { period: { id: periodId } },
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -156,6 +160,8 @@ export class BankSyncValidationsService {
 
     errors.push(...this.checkDuplicateMovements(movements));
 
+    errors.push(...this.checkUnexpectedAmount(movements));
+
     return { isValid: errors.length === 0, errors };
   }
 
@@ -249,6 +255,45 @@ export class BankSyncValidationsService {
     });
     return errors;
   }
+
+  /**
+   * Checks if there are movements with unexpected amounts.
+   *
+   * It will consider a movement as having an unexpected amount if the absolute value of the amount is greater than a given threshold.
+   *
+   * @param movements the bank movements to check
+   * @returns an array of UnexpectedAmountError containing the IDs and amounts of the unexpected movements
+   */
+  checkUnexpectedAmount(movements: BankMovement[]): UnexpectedAmountError[] {
+    const threshold = 10000; // Exemple de seuil pour les montants inattendus
+    const errors: UnexpectedAmountError[] = [];
+    movements.forEach((movement) => {
+      if (Math.abs(movement.amount) > threshold) {
+        errors.push(new UnexpectedAmountError(movement.id, movement.amount));
+      }
+    });
+    return errors
+  }
+
+  /**
+   * Checks if there are movements with dates outside the period.
+   *
+   * It will consider a movement as having an inconsistent date if the date is before the start date of the period or after the end date.
+   *
+   * @param periods the period to check against
+   * @param movements the bank movements to check
+   * @returns an array of InconsistentDateError containing the IDs and dates of the inconsistent movements
+   */
+  checkInconsistentDate(periods: Period, movements: BankMovement[]): InconsistentDateError[] {
+    const errors: InconsistentDateError[] = [];
+    movements.forEach((movement) => {
+      if (movement.date < periods.startDate || movement.date > periods.endDate) {
+          errors.push(new InconsistentDateError(movement.id, movement.date));
+      }
+    });
+    return errors
+  }  
+  
 
   /**
    * Removes a bank sync validation.
