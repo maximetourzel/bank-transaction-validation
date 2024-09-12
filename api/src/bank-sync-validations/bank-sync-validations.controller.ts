@@ -25,6 +25,7 @@ export class BankSyncValidationsController {
   ) {}
 
   @ApiCreatedResponse({
+    type: BankSyncValidation,
     description: 'The validation has been successfully created',
   })
   @ApiNotFoundResponse({
@@ -36,6 +37,7 @@ export class BankSyncValidationsController {
   }
 
   @ApiOkResponse({
+    type: BankSyncValidation,
     description: 'The list of validations for the period',
   })
   @ApiNotFoundResponse({
@@ -50,6 +52,7 @@ export class BankSyncValidationsController {
 
   @ApiOkResponse({
     description: 'The validation with the given id',
+    type: BankSyncValidation,
   })
   @ApiNotFoundResponse({
     description: 'The validation with the given id was not found',

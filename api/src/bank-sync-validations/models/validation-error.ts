@@ -1,10 +1,23 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ValidationErrorType } from '../enums/validation-error-type.enum';
 
 export class ValidationError {
+  @ApiProperty({
+    enum: ValidationErrorType,
+    example: ValidationErrorType.MISSING_CHECKPOINT,
+  })
+  type: ValidationErrorType;
+
+  @ApiProperty()
+  message: string;
+
   constructor(
-    public type: ValidationErrorType,
-    public message: string,
-  ) {}
+    type: ValidationErrorType,
+    message: string,
+  ) {
+    this.type = type;
+    this.message = message;
+  }
 }
 
 export class MissingCheckpointError extends ValidationError {
@@ -20,108 +33,91 @@ export class MissingMovementsError extends ValidationError {
 }
 
 export class BalanceMismatchError extends ValidationError {
+  @ApiProperty()
+  expectedBalance: number;
+
+  @ApiProperty()
+  actualBalance: number;
+
   constructor(
-    public expectedBalance: number,
-    public actualBalance: number,
+    expectedBalance: number,
+    actualBalance: number,
   ) {
     super(
       ValidationErrorType.BALANCE_MISMATCH,
-      `Final balance does not match calculated balance. Expected: ${expectedBalance}, Actual: ${actualBalance}`,
+      `Final balance does not match calculated balance.`,
     );
+    this.expectedBalance = expectedBalance;
+    this.actualBalance = actualBalance;
   }
 }
 
 export class DuplicateMovementsError extends ValidationError {
-  constructor(public duplicateTransactions: string[]) {
+  @ApiProperty()
+  duplicateTransactions: string[];
+
+  constructor(duplicateTransactions: string[]) {
     super(
       ValidationErrorType.DUPLICATE_MOVEMENT,
       `Duplicate movements detected: ${duplicateTransactions.join(', ')}`,
     );
+    this.duplicateTransactions = duplicateTransactions;
   }
 }
 
 export class InconsistentDateError extends ValidationError {
+  @ApiProperty()
+  movementId: string;
+
+  @ApiProperty()
+  movementDate: Date;
+
   constructor(
-    public movementId: string,
-    public movementDate: Date,
+    movementId: string,
+    movementDate: Date,
   ) {
     super(
       ValidationErrorType.INCONSISTENT_DATE,
       `Inconsistent date for movement ${movementId}: ${movementDate}`,
     );
+    this.movementId = movementId;
+    this.movementDate = movementDate;
   }
 }
 
-export class InitialBalanceMismatchError extends ValidationError {
-  constructor(
-    public expectedBalance: number,
-    public actualBalance: number,
-  ) {
-    super(
-      ValidationErrorType.INITIAL_BALANCE_MISMATCH,
-      `Initial balance does not match calculated balance. Expected: ${expectedBalance}, Actual: ${actualBalance}`,
-    );
-  }
-}
 
 export class UnexpectedAmountError extends ValidationError {
+  @ApiProperty()
+  movementId: string;
+
+  @ApiProperty()
+  amount: number;
+
   constructor(
-    public movementId: string,
-    public amount: number,
+    movementId: string,
+    amount: number,
   ) {
     super(
       ValidationErrorType.UNEXPECTED_AMOUNT,
       `Unexpected amount for movement ${movementId}: ${amount}`,
     );
+    this.movementId = movementId;
+    this.amount = amount;
   }
 }
 
-export class MissingTransactionError extends ValidationError {
-  constructor(
-    public expectedTransaction: {
-      date: Date;
-      amount: number;
-      wording: string;
-    },
-  ) {
-    super(
-      ValidationErrorType.MISSING_TRANSACTION,
-      `Missing transaction: ${expectedTransaction.date} - ${expectedTransaction.wording} - ${expectedTransaction.amount}`,
-    );
-  }
-}
 
 export class PotentialMovementDuplicateError extends ValidationError {
-  constructor(public movementIds: string[]) {
+  @ApiProperty()
+  movementIds: string[];
+
+  constructor(movementIds: string[]) {
     super(
       ValidationErrorType.POTENTIAL_MOVEMENT_DUPLICATE,
       `Potential duplicate movements detected: ${movementIds.join(', ')}`,
     );
+    this.movementIds = movementIds;
   }
 }
 
-export class MissingIntermediateCheckpointError extends ValidationError {
-  constructor(
-    public missingPeriodStart: Date,
-    public missingPeriodEnd: Date,
-  ) {
-    super(
-      ValidationErrorType.MISSING_INTERMEDIATE_CHECKPOINT,
-      `Missing intermediate checkpoint: ${missingPeriodStart} - ${missingPeriodEnd}`,
-    );
-  }
-}
 
-export class InconsistentBalanceError extends ValidationError {
-  constructor(
-    public startCheckpointId: string,
-    public endCheckpointId: string,
-    public expectedBalance: number,
-    public actualBalance: number,
-  ) {
-    super(
-      ValidationErrorType.INCONSISTENT_BALANCE,
-      `Inconsistent balance from checkpoint ${startCheckpointId} to checkpoint ${endCheckpointId}. Expected: ${expectedBalance}, Actual: ${actualBalance}`,
-    );
-  }
-}

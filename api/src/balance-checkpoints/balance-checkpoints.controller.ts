@@ -29,6 +29,7 @@ export class BalanceCheckpointsController {
   ) {}
 
   @ApiCreatedResponse({
+    type: BalanceCheckpoint,
     description: 'The balance checkpoint has been successfully created',
   })
   @Post('periods/:periodId/checkpoints')
@@ -43,6 +44,7 @@ export class BalanceCheckpointsController {
   }
 
   @ApiOkResponse({
+    type: BalanceCheckpoint,
     description: 'The list of balance checkpoints for the period',
   })
   @Get('periods/:periodId/checkpoints')
@@ -51,6 +53,7 @@ export class BalanceCheckpointsController {
   }
 
   @ApiOkResponse({
+    type: BalanceCheckpoint,
     description: 'The balance checkpoint with the given id',
   })
   @Get('checkpoints/:id')
@@ -59,6 +62,7 @@ export class BalanceCheckpointsController {
   }
 
   @ApiOkResponse({
+    type: BalanceCheckpoint,
     description: 'The balance checkpoint has been successfully updated',
   })
   @Patch('checkpoints/:id')

@@ -36,21 +36,18 @@ export class BankSyncValidation {
   isValid: boolean;
 
   @ApiProperty({
+    type: [ValidationError],
     description: 'The list of validation errors',
   })
   @Column({ type: 'json', nullable: true })
   validationErrors: ValidationError[];
 
-  @ApiProperty({
-    description: 'The list of bank movements',
-  })
+  @ApiHideProperty()
   @OneToMany(() => BankMovement, (movement) => movement.validation)
   @JoinColumn()
   movements: BankMovement[];
 
-  @ApiProperty({
-    description: 'The list of balance checkpoints',
-  })
+  @ApiHideProperty()
   @OneToMany(() => BalanceCheckpoint, (checkpoint) => checkpoint.validation)
   @JoinColumn()
   checkpoints: BalanceCheckpoint[];
