@@ -1,0 +1,11 @@
+@use '@angular/material' as mat;
+.main-container {
+    padding: 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .validation-container {
+        
+    }
+}

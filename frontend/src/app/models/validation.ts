@@ -1,4 +1,7 @@
+import { ValidationError } from './validation-error';
+
 export interface Validation {
   id: string;
-  // Ajoute les propriétés spécifiques si elles existent dans la documentation
+  isValid: boolean;
+  validationErrors: ValidationError[];
 }
