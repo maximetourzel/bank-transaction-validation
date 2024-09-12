@@ -134,6 +134,8 @@ describe('BankSyncValidationsService', () => {
       expect(result).toEqual(expectedValidation);
       expect(mockBankSyncValidationRepository.findOne).toHaveBeenCalledWith({
         where: { period: { id: 'uuid' } },
+        order: { createdAt: 'DESC' },
+
       });
     });
   });

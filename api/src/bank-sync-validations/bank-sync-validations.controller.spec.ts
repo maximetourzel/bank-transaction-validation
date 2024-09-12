@@ -16,6 +16,8 @@ const mockValidation: BankSyncValidation = {
   checkpoints: [],
   previousValidation: null,
   isHistorical: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe('BankSyncValidationsController', () => {

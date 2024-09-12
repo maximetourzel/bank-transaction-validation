@@ -66,13 +66,11 @@ describe('PeriodsService', () => {
         month: PeriodMonth.SEPTEMBER,
       };
 
-      mockPeriodRepository.save.mockImplementation(() => {
-        throw new QueryFailedError<any>('', [], { code: '23505' });
-      });
+      mockPeriodRepository.save.mockRejectedValueOnce(new QueryFailedError<any>('', [], { code: '23505' }));
 
-      expect(() => {
-        service.create(createPeriodDto);
-      }).toThrow(ConflictException);
+      await expect(service.create(createPeriodDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
