@@ -1,73 +1,138 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# **Bank Sync Validations API**
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a **NestJS**-based API designed for validating bank movements and balance checkpoints during financial reconciliation. The API supports functionalities like validating movements for specific periods, detecting potential duplicates, and managing the synchronization of banking data. It uses **PostgreSQL** as the database and supports **end-to-end (E2E) testing** with a clean database.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [**Bank Sync Validations API**](#bank-sync-validations-api)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Architecture](#architecture)
+  - [Setup](#setup)
+    - [Requirements](#requirements)
+    - [Installation](#installation)
+    - [Environment Variables](#environment-variables)
+  - [Running the Application](#running-the-application)
+    - [Development](#development)
+    - [Testing](#testing)
+      - [Unit tests](#unit-tests)
+      - [End-to-End Tests](#end-to-end-tests)
+  - [API Documentation](#api-documentation)
+  - [Project Structure](#project-structure)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Installation
+- **Create, read, and delete bank validation records**: Support for creating validations based on bank movements and balance checkpoints.
+- **Validation logic**:
+  - Check for missing movements and checkpoints.
+  - Validate balance mismatches between movements and checkpoints.
+  - Detect potential duplicate bank movements.
+- **Historical validation tracking**: Manage versions of validations, marking older ones as historical.
+- **Automated tests**: Comprehensive unit and E2E testing with PostgreSQL.
+- **Swagger API documentation** for easy interaction and visualization of API endpoints.
 
-```bash
-$ npm install
+## Architecture
+
+- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
+- **PostgreSQL**: A robust and open-source relational database system for storing validation and reconciliation data.
+- **TypeORM**: An ORM (Object Relational Mapper) framework that works with PostgreSQL to map TypeScript entities to database tables.
+- **Swagger**: Auto-generated API documentation.
+- **Jest**: For unit and end-to-end testing.
+
+## Setup
+
+### Requirements
+
+- **Node.js** (v20 or higher)
+- **PostgreSQL** (v13 or higher)
+- **Docker** (for running PostgreSQL in a container during testing)
+- **Nest CLI** (globally installed)
+
+### Installation
+
+1. **Clone the repository**:
+
+    ```bash
+    git clone https://github.com/maximetourzel/bank-transaction-validation
+    cd bank-transaction-validation/api
+    ```
+
+2. **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3. **Set up your PostgreSQL database**:
+
+    Ensure you have PostgreSQL installed locally or running via Docker ([See here](../README.md#docker-setup)), and create a database for the project.
+  
+### Environment Variables
+Create a **.env.developement** file in the root of the project and set the following environment variables:
+
+```ini
+# PostgreSQL Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=your-db-username
+DB_PASSWORD=your-db-password
+DB_DATABASE=your-db-name
 ```
 
-## Running the app
+## Running the Application
 
+### Development
+
+To start the development server, run:
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev
 ```
 
-## Test
+This will start the NestJS application on the port 3000. The API will be accessible at http://localhost:3000/.
 
+### Testing
+
+#### Unit tests
+
+To run the unit tests, use:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run test
 ```
 
-## Support
+#### End-to-End Tests
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+E2E tests use PostgreSQL for integration. Ensure the database is properly configured for testing. To use docker test container make sure to run the docker compose ([See here](../README.md#docker-setup))
 
-## Stay in touch
+To run the unit tests, use:
+```bash
+npm run test:e2e
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## API Documentation
 
-## License
+This project uses Swagger to provide an interactive API documentation interface. Once the application is running, you can access the Swagger UI at http://localhost:3000/api
 
-Nest is [MIT licensed](LICENSE).
+## Project Structure
+
+```plaintext
+test/                                         # e2e folder
+src/
+│
+├── bank-sync-validations/
+│   ├── bank-sync-validations.controller.ts   # Controller for the Bank Sync Validation routes
+│   ├── bank-sync-validations.service.ts      # Service implementing validation logic
+│   ├── entities/                             # TypeORM entities for the validation
+|   ├── dto/                                  # Dto
+│   ├── interfaces/                           # Classes for validation errors
+│
+├── bank-movements/                           # Module for handling bank movements
+│
+├── balance-checkpoints/                      # Module for handling balance checkpoints
+│
+├── periods/                                  # Module for handling periods
+│
+├── config/                                   # Typeorm service config
+│
+├── main.ts                                   # Application entry point
+│
+├── app.module.ts                             # Main module file
+```
