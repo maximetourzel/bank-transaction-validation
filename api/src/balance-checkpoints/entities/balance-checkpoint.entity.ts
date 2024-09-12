@@ -7,6 +7,8 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -40,4 +42,10 @@ export class BalanceCheckpoint {
   @ManyToOne(() => Period)
   @JoinColumn({ name: 'periodId' })
   period: Period;
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

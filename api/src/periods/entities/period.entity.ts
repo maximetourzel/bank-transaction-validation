@@ -7,6 +7,8 @@ import {
   Unique,
   BeforeInsert,
   BeforeUpdate,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { PeriodMonth } from '../enums/period-month.enum';
 
@@ -90,4 +92,10 @@ export class Period {
     };
     return months[month.toLowerCase()];
   }
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

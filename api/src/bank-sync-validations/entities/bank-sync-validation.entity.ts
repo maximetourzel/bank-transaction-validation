@@ -5,6 +5,8 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { BankMovement } from '../../bank-movements/entities/bank-movement.entity';
 import { BalanceCheckpoint } from '../../balance-checkpoints/entities/balance-checkpoint.entity';
@@ -66,4 +68,10 @@ export class BankSyncValidation {
   })
   @Column({ type: 'boolean', default: false })
   isHistorical: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

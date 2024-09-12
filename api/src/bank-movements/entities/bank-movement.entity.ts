@@ -7,6 +7,8 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -47,4 +49,10 @@ export class BankMovement {
   @ManyToOne(() => Period)
   @JoinColumn({ name: 'periodId' })
   period: Period;
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
