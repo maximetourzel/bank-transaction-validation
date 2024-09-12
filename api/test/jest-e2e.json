@@ -9,5 +9,8 @@
   "watchPlugins": [
       "jest-watch-typeahead/filename",
       "jest-watch-typeahead/testname"
-    ]
+  ],
+  "moduleNameMapper": {
+  "^src/(.*)": "<rootDir>/../src/$1"
+}
 }
