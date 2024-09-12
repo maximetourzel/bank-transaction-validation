@@ -1,0 +1,37 @@
+name: bank-docker
+services:
+  db:
+    image: postgres:latest
+    container_name: postgresql_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bankdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+  db-test:
+    image: postgres:latest
+    container_name: postgresql_db_test
+    environment: 
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bankdb-test
+    ports:
+      - 5434:5432
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
