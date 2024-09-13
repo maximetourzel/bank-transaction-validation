@@ -198,11 +198,11 @@ describe('All Tests e2e', () => {
     });
   });
 
-  describe('BalanceCheckerController (e2e)', () => {
+  describe('BalanceCheckpointsController (e2e)', () => {
     describe('POST /periods/:periodId/checkpoints', () => {
       it('should create a new balance checkpoint', async () => {
         const createBalanceCheckpointDto = {
-          date: '2022-01-15',
+          date: '2020-01-15',
           balance: 1000,
         };
 
@@ -222,6 +222,16 @@ describe('All Tests e2e', () => {
 
         expect(response.body).toHaveProperty('id');
       });
+      it('should throw an error if the balance checkpoint date is not in the period', async () => {
+        const createBalanceCheckpointDto = {
+          date: '2021-01-15',
+          balance: 1000,
+        };
+        await request(app.getHttpServer())
+          .post(`/periods/${periodSaved.id}/checkpoints`)
+          .send(createBalanceCheckpointDto)
+          .expect(400)
+      })
     });
 
     describe('GET /periods/:periodId/checkpoints', () => {

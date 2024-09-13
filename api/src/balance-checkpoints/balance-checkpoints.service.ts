@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBalanceCheckpointDto } from './dto/create-balance-checkpoint.dto';
 import { UpdateBalanceCheckpointDto } from './dto/update-balance-checkpoint.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,7 +26,16 @@ export class BalanceCheckpointsService {
     createBalanceCheckpointDto: CreateBalanceCheckpointDto,
   ): Promise<BalanceCheckpoint> {
     const period = await this.periodsService.findOneById(periodId);
-    //TODO: verify if createBalanceCheckpointDto.date is in period
+    const periodStartDate = period.startDate;
+    const periodEndDate = period.endDate;
+    if (
+      createBalanceCheckpointDto.date < periodStartDate ||
+      createBalanceCheckpointDto.date > periodEndDate
+    ) {
+      throw new BadRequestException( 
+        `The date ${createBalanceCheckpointDto.date} is not in the period ${periodStartDate} - ${periodEndDate}`
+      )
+    }
 
     const newBalanceCheckpoint = this.balanceCheckpointsRepository.create({
       ...createBalanceCheckpointDto,
