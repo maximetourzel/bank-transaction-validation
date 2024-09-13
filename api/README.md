@@ -19,6 +19,7 @@ This project is a **NestJS**-based API designed for validating bank movements an
       - [End-to-End Tests](#end-to-end-tests)
   - [API Documentation](#api-documentation)
   - [Project Structure](#project-structure)
+  - [Example Usage](#example-usage)
 
 ## Features
 
@@ -146,3 +147,145 @@ src/
 │
 ├── app.module.ts                             # Main module file
 ```
+
+## Example Usage
+
+Here's an example workflow that demonstrates how to use the API to create a period, validate it, handle validation errors, and then resolve them by adding movements and a balance checkpoint.
+
+### Step 1: Create a Period
+
+First, create a new period. This period will represent a specific month and year.
+
+**Endpoint**: `POST /periods`
+
+**Request Body**:
+```json
+{
+  "year": 2024,
+  "month": "septembre"
+}
+```
+**Response**
+```json
+{
+  "id": "b2c8c9b6-0b7a-4a6f-9c1d-2e3f4a5b6c7d",
+  "year": 2024,
+  "month": "septembre",
+  "startDate": "2024-09-01T00:00:00.000Z",
+  "endDate": "2024-09-30T23:59:59.000Z"
+}
+```
+
+### Step 2: Create a Validation for the Period
+
+Now that the period is created, let's validate it. This will check if the period has necessary movements and balance checkpoints.
+
+**Endpoint**: `POST /periods/{periodId}/validations`
+
+- Replace `{periodId}` with the ID of the period you just created.
+
+**Response**
+```json
+{
+    "isValid": false,
+    "validationErrors": [
+        {
+            "type": "MISSING_MOVEMENTS",
+            "message": "No movements found"
+        },
+        {
+            "type": "MISSING_CHECKPOINT",
+            "message": "No checkpoint found"
+        }
+    ],
+    "previousValidation": null,
+    "id": "202d1a6b-8fc4-42d4-9d54-41f0b9e2691b",
+    "isHistorical": false,
+}
+```
+
+This indicates that the period has no movements and no balance checkpoints yet, which need to be addressed.
+
+### Step 3: Add Bank Movements
+
+Next, let's add some bank movements for the period.
+
+**Endpoint**: `POST /periods/{periodId}/movements`
+
+- Replace `{periodId}` with the ID of your period.
+
+**Request Body**:
+
+```json
+{
+  "date": "2024-09-15",
+  "wording": "Salary",
+  "amount": 3000
+}
+
+```
+
+**Response**
+```json
+{
+  "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+  "date": "2024-09-15",
+  "wording": "Salary",
+  "amount": 3000
+}
+
+```
+
+### Step 4: Add a Balance Checkpoint
+
+After adding a movement, we need to add a balance checkpoint for the period.
+
+**Endpoint**: `POST /periods/{periodId}/checkpoints`
+
+**Request Body**:
+
+```json
+{
+  "date": "2024-09-30",
+  "balance": 3000
+}
+```
+
+**Response**
+```json
+{
+  "id": "d9b6bcd-bbfd-4b2d-9b5d-1c8a9b6f1ebd",
+  "date": "2024-09-30",
+  "balance": 3000
+}
+```
+
+### Step 5: Revalidate the Period
+
+Now that we have both movements and a balance checkpoint for the period, we can validate it again.
+
+**Endpoint**: `POST /periods/{periodId}/validations`
+
+**Response**:
+
+```json
+{
+  "isValid": true,
+  "errors": {}
+}
+```
+
+### Step 6: Validation Errors Explained
+
+When validating a period, the system checks whether certain financial data is complete and consistent. Below are the possible validation errors you might encounter:
+
+- **MISSING_CHECKPOINT**: This error occurs when no balance checkpoints are set for the period. A balance checkpoint is required to ensure that the account's balance is correctly recorded at a specific date.
+
+- **MISSING_MOVEMENTS**: This error is triggered when there are no bank movements associated with the period. Bank movements represent financial transactions, and their absence suggests incomplete financial data for the period.
+
+- **BALANCE_MISMATCH**: This error indicates a discrepancy between the balance in the checkpoints and the expected balance based on the movements recorded. It suggests that the movements and checkpoints are not aligning correctly.
+
+
+- **UNEXPECTED_AMOUNT**: This error occurs when there are movements with unexpected amounts. It will consider a movement as having an unexpected amount if the absolute value of the amount is greater than a given threshold (Currently hardcoded, threshold = 10000)
+
+- **POTENTIAL_MOVEMENT_DUPLICATE**: This warning indicates that there are movements that might be duplicates based on similar date, amount, or wording, but they are not exact duplicates. It serves as a caution to review those movements for potential redundancy.

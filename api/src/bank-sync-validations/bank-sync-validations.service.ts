@@ -275,7 +275,7 @@ export class BankSyncValidationsService {
    * @returns an array of UnexpectedAmountError containing the IDs and amounts of the unexpected movements
    */
   checkUnexpectedAmount(movements: BankMovement[]): UnexpectedAmountError[] {
-    const threshold = 10000; // Exemple de seuil pour les montants inattendus
+    const threshold = 10000; // Seuil pour les montants inattendus
     const errors: UnexpectedAmountError[] = [];
     movements.forEach((movement) => {
       if (Math.abs(movement.amount) > threshold) {
