@@ -139,13 +139,14 @@ describe('All Tests e2e', () => {
 
   describe('BankMovementsController (e2e)', () => {
     describe('POST /bank-movements', () => {
-      const createBankMovementDto = {
-        date: '2020-01-15',
-        amount: 100,
-        wording: 'Depot test',
-      };
+      
 
       it('should create a new bank movement', () => {
+        const createBankMovementDto = {
+          date: '2020-01-15',
+          amount: 100,
+          wording: 'Depot test',
+        };
         return request(app.getHttpServer())
           .post(`/periods/${periodSaved.id}/movements`)
           .send(createBankMovementDto)
@@ -161,6 +162,17 @@ describe('All Tests e2e', () => {
             expect(wording).toBe(createBankMovementDto.wording);
           });
       });
+      it('should throw an error if the movement date is not in the period', async () => {
+        const createBankMovementDto = {
+          date: '2018-01-15',
+          amount: 100,
+          wording: 'Depot test',
+        };
+        await request(app.getHttpServer())
+          .post(`/periods/${periodSaved.id}/movements`)
+          .send(createBankMovementDto)
+          .expect(400)
+      })
     });
     describe('GET /periods/:periodId/movements', () => {
       it('should return an array of bank movements for a given period', async () => {

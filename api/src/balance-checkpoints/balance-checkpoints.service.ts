@@ -33,7 +33,7 @@ export class BalanceCheckpointsService {
       createBalanceCheckpointDto.date > periodEndDate
     ) {
       throw new BadRequestException( 
-        `The date ${createBalanceCheckpointDto.date} is not in the period ${periodStartDate} - ${periodEndDate}`
+        `The date of the balance checkpoint is not in the period`
       )
     }
 

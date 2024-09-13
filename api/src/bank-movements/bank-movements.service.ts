@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBankMovementDto } from './dto/create-bank-movement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankMovement } from './entities/bank-movement.entity';
@@ -25,7 +25,11 @@ export class BankMovementsService {
     createBankMovementDto: CreateBankMovementDto,
   ): Promise<BankMovement> {
     const period = await this.periodsService.findOneById(periodId);
-    //TODO: verify if createBankMovementDto.date is in period
+    if (createBankMovementDto.date < period.startDate || createBankMovementDto.date > period.endDate) {
+      throw new BadRequestException(
+        `The date of the bank movement is not in the period`,
+      );
+    }
 
     const newBankMovement = this.bankMovementsRepository.create({
       ...createBankMovementDto,
