@@ -33,6 +33,7 @@ describe('BankSyncValidationsController', () => {
           useValue: {
             create: jest.fn().mockResolvedValue(mockValidation),
             findOneByPeriodId: jest.fn().mockResolvedValue(mockValidation),
+            findAllByPeriodId: jest.fn().mockResolvedValue([mockValidation]),
             findOne: jest.fn().mockResolvedValue(mockValidation),
             remove: jest.fn().mockResolvedValue(undefined),
           },
@@ -88,22 +89,22 @@ describe('BankSyncValidationsController', () => {
     });
   });
 
-  describe('findOneByPeriod', () => {
-    it('should return a validation for the given period', async () => {
+  describe('findAllByPeriodId', () => {
+    it('should return a list of validations for the given period', async () => {
       const periodId = 'period-id';
-      const result = await controller.findOneByPeriod(periodId);
+      const result = await controller.findAllByPeriodId(periodId);
 
-      expect(service.findOneByPeriodId).toHaveBeenCalledWith(periodId);
-      expect(result).toEqual(mockValidation);
+      expect(service.findAllByPeriodId).toHaveBeenCalledWith(periodId);
+      expect(result).toEqual([mockValidation]);
     });
 
     it('should throw NotFoundException if the validation is not found for the period', async () => {
       jest
-        .spyOn(service, 'findOneByPeriodId')
+        .spyOn(service, 'findAllByPeriodId')
         .mockRejectedValue(new NotFoundException());
 
       await expect(
-        controller.findOneByPeriod('invalid-period-id'),
+        controller.findAllByPeriodId('invalid-period-id'),
       ).rejects.toThrow(NotFoundException);
     });
   });
