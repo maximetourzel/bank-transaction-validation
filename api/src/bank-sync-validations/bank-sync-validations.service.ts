@@ -56,7 +56,8 @@ export class BankSyncValidationsService {
     });
   }
 
-  findAllByPeriodId(periodId: string): Promise<BankSyncValidation[]> {
+  async findAllByPeriodId(periodId: string): Promise<BankSyncValidation[]> {
+    await this.periodsService.findOneById(periodId);
     return this.bankSyncValidationRepository.find({
       where: { period: { id: periodId } },
       order: { createdAt: 'DESC' },

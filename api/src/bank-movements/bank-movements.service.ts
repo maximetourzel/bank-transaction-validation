@@ -43,7 +43,8 @@ export class BankMovementsService {
    * @param periodId the id of the period
    * @returns a promise of an array of bank movements
    */
-  findAllForPeriod(periodId: string): Promise<BankMovement[]> {
+  async findAllForPeriod(periodId: string): Promise<BankMovement[]> {
+    await this.periodsService.findOneById(periodId);
     return this.bankMovementsRepository.find({
       where: { period: { id: periodId } },
     });
@@ -54,7 +55,8 @@ export class BankMovementsService {
    * @param periodId the id of the period
    * @returns a promise of an array of bank movements
    */
-  findByPeriodId(periodId: string): Promise<BankMovement[]> {
+  async findByPeriodId(periodId: string): Promise<BankMovement[]> {
+    await this.periodsService.findOneById(periodId);
     return this.bankMovementsRepository.find({
       where: { period: { id: periodId } },
     });

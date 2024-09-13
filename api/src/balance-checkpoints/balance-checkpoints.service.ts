@@ -50,7 +50,8 @@ export class BalanceCheckpointsService {
    * @param periodId The id of the period to find balance checkpoints for.
    * @returns An array of balance checkpoints for the given period.
    */
-  findByPeriodId(periodId: string): Promise<BalanceCheckpoint[]> {
+  async findByPeriodId(periodId: string): Promise<BalanceCheckpoint[]> {
+    await this.periodsService.findOneById(periodId);
     return this.balanceCheckpointsRepository.find({
       where: { period: { id: periodId } },
     });
