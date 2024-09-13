@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
 import { BankSyncValidationsService } from './bank-sync-validations.service';
@@ -32,7 +33,7 @@ export class BankSyncValidationsController {
     description: 'The period with the given id was not found',
   })
   @Post('periods/:periodId/validations')
-  create(@Param('periodId') periodId: string): Promise<BankSyncValidation> {
+  create(@Param('periodId', new ParseUUIDPipe()) periodId: string): Promise<BankSyncValidation> {
     return this.bankSyncValidationsService.create(periodId);
   }
 
@@ -42,7 +43,7 @@ export class BankSyncValidationsController {
   })
   @Get('periods/:periodId/validations')
   findAllByPeriodId(
-    @Param('periodId') periodId: string,
+    @Param('periodId', new ParseUUIDPipe()) periodId: string,
   ): Promise<BankSyncValidation[]> {
     return this.bankSyncValidationsService.findAllByPeriodId(periodId);
   }
@@ -56,7 +57,7 @@ export class BankSyncValidationsController {
   })
   @Get('validations/:validationId')
   findOne(
-    @Param('validationId') validationId: string,
+    @Param('validationId', new ParseUUIDPipe()) validationId: string,
   ): Promise<BankSyncValidation> {
     return this.bankSyncValidationsService.findOne(validationId);
   }
@@ -69,7 +70,7 @@ export class BankSyncValidationsController {
   })
   @Delete('validations/:validationId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('validationId') validationId: string): Promise<void> {
+  async remove(@Param('validationId', new ParseUUIDPipe()) validationId: string): Promise<void> {
     await this.bankSyncValidationsService.remove(validationId);
   }
 }

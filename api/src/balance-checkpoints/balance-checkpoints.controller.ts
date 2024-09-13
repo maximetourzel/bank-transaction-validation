@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { BalanceCheckpointsService } from './balance-checkpoints.service';
 import { CreateBalanceCheckpointDto } from './dto/create-balance-checkpoint.dto';
@@ -34,7 +35,7 @@ export class BalanceCheckpointsController {
   })
   @Post('periods/:periodId/checkpoints')
   create(
-    @Param('periodId') periodId: string,
+    @Param('periodId', new ParseUUIDPipe()) periodId: string,
     @Body() createBalanceCheckpointDto: CreateBalanceCheckpointDto,
   ): Promise<BalanceCheckpoint> {
     return this.balanceCheckpointsService.create(
@@ -48,7 +49,7 @@ export class BalanceCheckpointsController {
     description: 'The list of balance checkpoints for the period',
   })
   @Get('periods/:periodId/checkpoints')
-  findAllForPeriod(@Param('periodId') periodId: string) {
+  findAllForPeriod(@Param('periodId', new ParseUUIDPipe()) periodId: string) {
     return this.balanceCheckpointsService.findByPeriodId(periodId);
   }
 
@@ -57,7 +58,7 @@ export class BalanceCheckpointsController {
     description: 'The balance checkpoint with the given id',
   })
   @Get('checkpoints/:id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.balanceCheckpointsService.findOneById(id);
   }
 
@@ -67,7 +68,7 @@ export class BalanceCheckpointsController {
   })
   @Patch('checkpoints/:id')
   update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateBalanceCheckpointDto: UpdateBalanceCheckpointDto,
   ) {
     return this.balanceCheckpointsService.update(
@@ -84,7 +85,7 @@ export class BalanceCheckpointsController {
   })
   @Delete('checkpoints/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.balanceCheckpointsService.remove(id);
   }
 }

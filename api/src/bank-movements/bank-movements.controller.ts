@@ -7,6 +7,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { BankMovementsService } from './bank-movements.service';
 import { CreateBankMovementDto } from './dto/create-bank-movement.dto';
@@ -30,7 +31,7 @@ export class BankMovementsController {
   })
   @Post('periods/:periodId/movements')
   create(
-    @Param('periodId') periodId: string,
+    @Param('periodId', new ParseUUIDPipe()) periodId: string,
     @Body() createBankMovementDto: CreateBankMovementDto,
   ): Promise<BankMovement> {
     return this.bankMovementsService.create(periodId, createBankMovementDto);
@@ -42,7 +43,7 @@ export class BankMovementsController {
   })
   @Get('periods/:periodId/movements')
   findAllForPeriod(
-    @Param('periodId') periodId: string,
+    @Param('periodId', new ParseUUIDPipe()) periodId: string,
   ): Promise<BankMovement[]> {
     return this.bankMovementsService.findAllForPeriod(periodId);
   }
@@ -55,7 +56,7 @@ export class BankMovementsController {
   })
   @Delete('movements/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.bankMovementsService.remove(id);
   }
 }

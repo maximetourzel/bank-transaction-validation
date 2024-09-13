@@ -7,6 +7,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { PeriodsService } from './periods.service';
 import { CreatePeriodDto } from './dto/create-period.dto';
@@ -51,7 +52,7 @@ export class PeriodsController {
   })
   @ApiNotFoundResponse({ description: 'The period was not found' })
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Period> {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<Period> {
     return this.periodsService.findOneById(id);
   }
 
@@ -59,7 +60,7 @@ export class PeriodsController {
   @ApiNotFoundResponse({ description: 'The period was not found' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.periodsService.remove(id);
   }
 }
