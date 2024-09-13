@@ -111,6 +111,16 @@ npm run test:e2e
 
 This project uses Swagger to provide an interactive API documentation interface. Once the application is running, you can access the Swagger UI at http://localhost:3000/api
 
+If you prefer to use Postman for interacting with the API, you can generate a collection by importing the Swagger JSON file.
+
+1. Go to: [http://localhost:3000/api-json](http://localhost:3000/api-json)
+2. Copy the JSON content.
+3. Open Postman, navigate to **File** > **Import**, and select the **Raw Text** option.
+4. Paste the copied JSON, then click **Continue**.
+5. A new collection will be created in Postman with all available API endpoints.
+
+This allows you to easily test the API using Postman and reuse requests for testing or development purposes.
+
 ## Project Structure
 
 ```plaintext
