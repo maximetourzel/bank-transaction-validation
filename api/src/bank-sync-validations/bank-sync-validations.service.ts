@@ -214,8 +214,10 @@ export class BankSyncValidationsService {
     if (checkpoints.length === 0 || movements.length === 0) {
       return;
     }
-    // TODO: get most recent checkpoint balance
-    const finalBalance = checkpoints[checkpoints.length - 1].balance;
+    const mostRecentCheckpoint = checkpoints.reduce((prev, current) =>
+      prev.createdAt > current.createdAt ? prev : current,
+    );
+    const finalBalance = mostRecentCheckpoint.balance;
     const calculatedBalance = movements.reduce(
       (acc, movement) => acc + movement.amount,
       0,
