@@ -56,6 +56,13 @@ export class BankSyncValidationsService {
     });
   }
 
+  findAllByPeriodId(periodId: string): Promise<BankSyncValidation[]> {
+    return this.bankSyncValidationRepository.find({
+      where: { period: { id: periodId } },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   /**
    * Finds a bank sync validation by its id.
    *

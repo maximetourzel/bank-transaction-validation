@@ -37,17 +37,14 @@ export class BankSyncValidationsController {
   }
 
   @ApiOkResponse({
-    type: BankSyncValidation,
+    type: [BankSyncValidation],
     description: 'The list of validations for the period',
   })
-  @ApiNotFoundResponse({
-    description: 'The period with the given id was not found',
-  })
   @Get('periods/:periodId/validations')
-  findOneByPeriod(
+  findAllByPeriodId(
     @Param('periodId') periodId: string,
-  ): Promise<BankSyncValidation> {
-    return this.bankSyncValidationsService.findOneByPeriodId(periodId);
+  ): Promise<BankSyncValidation[]> {
+    return this.bankSyncValidationsService.findAllByPeriodId(periodId);
   }
 
   @ApiOkResponse({

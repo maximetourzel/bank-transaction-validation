@@ -310,21 +310,13 @@ describe('All Tests e2e', () => {
       });
     });
     describe('GET /periods/:periodId/validations', () => {
-      it('should return a validation by period id', async () => {
+      it('should return all validations for a period', async () => {
         return request(app.getHttpServer())
           .get(`/periods/${periodSaved.id}/validations`)
           .expect(200)
           .expect((res) => {
-            expect(res.body).toHaveProperty('id');
-            expect(res.body).toHaveProperty('isValid');
+            expect(Array.isArray(res.body)).toBe(true);
           });
-      });
-
-      it('should return 404 if the validation is not found', async () => {
-        const wrongPeriodId = uuidv4();
-        return request(app.getHttpServer())
-          .get(`/periods/${wrongPeriodId}/validations`)
-          .expect(404);
       });
     });
     describe('GET /validations/:validationId', () => {
