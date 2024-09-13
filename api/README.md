@@ -68,7 +68,10 @@ This project is a **NestJS**-based API designed for validating bank movements an
     Ensure you have PostgreSQL installed locally or running via Docker ([See here](../README.md#docker-setup)), and create a database for the project.
   
 ### Environment Variables
-Create a **.env.developement** file in the root of the project and set the following environment variables:
+
+**For development**
+
+Create a **.env.development** file in the root of the project and set the following environment variables:
 
 ```ini
 # PostgreSQL Database Configuration
@@ -77,6 +80,19 @@ DB_PORT=5432
 DB_USERNAME=your-db-username
 DB_PASSWORD=your-db-password
 DB_DATABASE=your-db-name
+```
+
+**For end-to-end tests**
+
+Create a **.env.test** file in the root of the project and set the following environment variables:
+
+```ini
+# PostgreSQL Database test Configuration
+DB_HOST=localhost
+DB_PORT=5434
+DB_USERNAME=your-db-username
+DB_PASSWORD=your-db-password
+DB_DATABASE=your-db-test-name
 ```
 
 ## Running the Application
@@ -101,7 +117,7 @@ npm run test
 
 #### End-to-End Tests
 
-E2E tests use PostgreSQL for integration. Ensure the database is properly configured for testing. To use docker test container make sure to run the docker compose ([See here](../README.md#docker-setup))
+E2E tests use PostgreSQL for integration. Ensure the database is properly configured for testing and your `.env.test` file is setup. To use docker test container make sure to run the docker compose ([See here](../README.md#docker-setup))
 
 To run the unit tests, use:
 ```bash
