@@ -38,6 +38,8 @@ import { AddCheckpointComponent } from './components/dialogs/add-checkpoint/add-
 import { AddPeriodComponent } from './components/dialogs/add-period/add-period.component';
 import { CreatePeriodDto } from './models/dto/create-period-dto';
 import { ValidationErrorType } from './enums/validation-error-type.enum';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
 
 interface MovementTableData extends Movement {
   duplicateErrorTooltip?: string;
@@ -57,6 +59,8 @@ interface MovementTableData extends Movement {
     MatCardModule,
     MatIconModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatMenuModule,
     CommonModule,
   ],
   templateUrl: './app.component.html',
@@ -66,6 +70,7 @@ export class AppComponent implements OnInit {
   periods = signal<Period[]>([]);
   selectedPeriod = signal<Period | null>(null);
 
+  movementsAreLoading = false;
   movements = signal<Movement[]>([]);
   movementTableDatas: Signal<MovementTableData[]> = computed(() => {
     const validationErrors = this.validation()?.validationErrors || [];
@@ -99,6 +104,7 @@ export class AppComponent implements OnInit {
     });
   });
 
+  checkpointsAreLoading = false;
   checkpoints = signal<Checkpoint[]>([]);
   validation = signal<Validation | null>(null);
 
@@ -106,14 +112,12 @@ export class AppComponent implements OnInit {
   cpDisplayedColumns: string[] = ['date', 'balance', 'delete'];
 
   hasMissingMovementsError = computed(() => {
-    console.log('has missing mov');
     return this.validation()?.validationErrors.some(
       (error) => error.type === ValidationErrorType.MISSING_MOVEMENTS,
     );
   });
 
   hasMissingCheckpointsError = computed(() => {
-    console.log('has missing cp');
     return this.validation()?.validationErrors.some(
       (error) => error.type === ValidationErrorType.MISSING_CHECKPOINT,
     );
@@ -165,18 +169,22 @@ export class AppComponent implements OnInit {
   }
 
   loadMovements(): void {
+    this.movementsAreLoading = true;
     this.movementService
       .getMovementsForPeriod(this.selectedPeriod()!.id)
       .subscribe((movements) => {
         this.movements.set(movements);
+        this.movementsAreLoading = false;
       });
   }
 
   loadCheckpoints(): void {
+    this.checkpointsAreLoading = true;
     this.checkpointService
       .getCheckpointsForPeriod(this.selectedPeriod()!.id)
       .subscribe((checkpoints) => {
         this.checkpoints.set(checkpoints);
+        this.checkpointsAreLoading = false;
       });
   }
 
@@ -203,22 +211,6 @@ export class AppComponent implements OnInit {
   }
 
   onSelectPeriod(period: Period): void {
-    // if (!this.selectedPeriod?.id) {
-    //   return;
-    // }
-
-    // forkJoin({
-    //   movements: this.loadMovements(),
-    //   checkpoints: this.loadCheckpoints(),
-    // }).subscribe({
-    //   next: () => {
-    //     // Une fois que les deux appels sont terminés, on appelle loadValidation()
-    //     this.loadValidation();
-    //   },
-    //   error: (error) => {
-    //     console.error('Error loading movements or checkpoints:', error);
-    //   },
-    // });
     this.selectedPeriod.set(period);
   }
 

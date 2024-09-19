@@ -44,13 +44,11 @@ export class AddPeriodComponent {
   }
 
   onSubmit(): void {
-    console.log('this.newPeriodForm.valid :>> ', this.newPeriodForm.valid);
     if (this.newPeriodForm.valid) {
       const createPeriod: CreatePeriodDto = {
         month: this.newPeriodForm.value.month!,
         year: this.newPeriodForm.value.year!,
       };
-      console.log('createPeriod :>> ', createPeriod);
       this.dialogRef.close(createPeriod);
     }
   }
