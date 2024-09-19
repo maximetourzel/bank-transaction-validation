@@ -2,14 +2,11 @@
   <div class="period-container">
     <mat-form-field>
       <mat-label>Select period</mat-label>
-      <mat-select
-        [(value)]="selectedPeriod"
-        (selectionChange)="onSelectPeriod()"
-      >
+      <mat-select (selectionChange)="onSelectPeriod($event.value)">
         <mat-option>None</mat-option>
-        @for (period of periods; track period.id) {
+        @for (period of periods(); track period.id) {
           <mat-option [value]="period"
-            >{{ period.year }} - {{ period.month }}</mat-option
+            >{{ period.year }} - {{ period.month | titlecase }}</mat-option
           >
         }
       </mat-select>
@@ -21,27 +18,32 @@
     </button>
   </div>
 
-  @if (validation) {
+  @if (validation()) {
     <mat-card
       class="validation-container"
-      [style]="{ color: validation.isValid ? 'green' : 'red' }"
+      [style]="{ color: validation()!.isValid ? 'green' : 'red' }"
       appearance="outlined"
     >
       <mat-card-content>
-        @if (validation.isValid) {
-          <p>Validation is valid</p>
+        @if (validation()!.isValid) {
+          <div>
+            <mat-icon>check</mat-icon>
+            <p>Synchronisation success</p>
+          </div>
         } @else {
-          <p>Validation is not valid</p>
-          @for (error of validation.validationErrors; track $index) {
-            <p>{{ error.message }}</p>
-          }
+          <div>
+            <mat-icon>close</mat-icon>
+            <p>Validation is not valid</p>
+            @for (error of validation()!.validationErrors; track $index) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
         }
       </mat-card-content>
     </mat-card>
   }
 
-  @if (selectedPeriod) {
-    <!-- Movements -->
+  @if (selectedPeriod()) {
     <mat-card appearance="outlined" class="movements-card">
       <mat-card-header class="movements-card-header">
         <mat-card-title>Movements</mat-card-title>
@@ -52,7 +54,7 @@
         }
       </mat-card-header>
       <mat-card-content>
-        <table mat-table [dataSource]="movementTableDatas">
+        <table mat-table [dataSource]="movementTableDatas()">
           <ng-container matColumnDef="date">
             <th mat-header-cell *matHeaderCellDef>Date</th>
             <td mat-cell *matCellDef="let element">
@@ -68,19 +70,36 @@
                 }
               </div>
             </td>
+            <td mat-footer-cell *matFooterCellDef>Total</td>
           </ng-container>
           <ng-container matColumnDef="wording">
             <th mat-header-cell *matHeaderCellDef>Wording</th>
             <td mat-cell *matCellDef="let element">{{ element.wording }}</td>
+            <td mat-footer-cell *matFooterCellDef></td>
           </ng-container>
           <ng-container matColumnDef="amount">
             <th mat-header-cell *matHeaderCellDef>Amount</th>
             <td mat-cell *matCellDef="let element">
               <div class="amount-cell">
-                {{ element.amount }}
+                {{ element.amount | currency: "EUR" }}
                 @if (element.amountErrorTooltip) {
                   <mat-icon
                     matTooltip="{{ element.amountErrorTooltip }}"
+                    color="warn"
+                  >
+                    error
+                  </mat-icon>
+                }
+              </div>
+            </td>
+            <td mat-footer-cell *matFooterCellDef>
+              <div>
+                {{ movementsTotalAmount() | currency: "EUR" }}
+                @if (hasBalanceMismatchError()) {
+                  <mat-icon
+                    matTooltip="Balance mismatch - Expected balance {{
+                      expectedBalance() | currency: 'EUR'
+                    }}"
                     color="warn"
                   >
                     error
@@ -101,12 +120,18 @@
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
+            <td mat-footer-cell *matFooterCellDef></td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="movDisplayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: movDisplayedColumns"></tr>
           <tr *matNoDataRow>
             No movements
           </tr>
+          <tr
+            [hidden]="movementTableDatas().length === 0"
+            mat-footer-row
+            *matFooterRowDef="movDisplayedColumns; sticky: true"
+          ></tr>
         </table>
       </mat-card-content>
       <mat-card-actions>
@@ -117,25 +142,26 @@
       </mat-card-actions>
     </mat-card>
 
-    <!-- Checkpoints -->
     <mat-card appearance="outlined" class="checkpoints-card">
       <mat-card-header class="checkpoints-card-header">
         <mat-card-title>Checkpoints</mat-card-title>
-        @if (hasMissingMovementsError()) {
-          <mat-icon matTooltip="Missing movements" color="warn">
+        @if (hasMissingCheckpointsError()) {
+          <mat-icon matTooltip="Missing checkpoints" color="warn">
             error_outline
           </mat-icon>
         }
       </mat-card-header>
       <mat-card-content>
-        <table mat-table [dataSource]="checkpoints">
+        <table mat-table [dataSource]="checkpoints()">
           <ng-container matColumnDef="date">
             <th mat-header-cell *matHeaderCellDef>Date</th>
             <td mat-cell *matCellDef="let element">{{ element.date }}</td>
           </ng-container>
           <ng-container matColumnDef="balance">
             <th mat-header-cell *matHeaderCellDef>Balance</th>
-            <td mat-cell *matCellDef="let element">{{ element.balance }}</td>
+            <td mat-cell *matCellDef="let element">
+              {{ element.balance | currency: "EUR" }}
+            </td>
           </ng-container>
           <ng-container matColumnDef="delete">
             <th mat-header-cell *matHeaderCellDef></th>
@@ -165,7 +191,6 @@
       </mat-card-actions>
     </mat-card>
 
-    <!-- Validate -->
     <button mat-flat-button (click)="onValidate()">Validate</button>
   }
 </div>

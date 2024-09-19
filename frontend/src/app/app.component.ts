@@ -1,4 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  effect,
+  Signal,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -21,10 +29,9 @@ import { CreateBankMovementDto } from './models/dto/create-bank-movement-dto';
 import {
   isPotentialMovementDuplicateError,
   isUnexpectedAmountError,
-  ValidationError,
 } from './models/validation-error';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { forkJoin, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
+import { mergeMap, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { CreateBalanceCheckpointDto } from './models/dto/create-balance-checkpoint-dto';
 import { AddCheckpointComponent } from './components/dialogs/add-checkpoint/add-checkpoint.component';
@@ -35,7 +42,6 @@ import { ValidationErrorType } from './enums/validation-error-type.enum';
 interface MovementTableData extends Movement {
   duplicateErrorTooltip?: string;
   amountErrorTooltip?: string;
-  hasErrors: boolean;
 }
 
 @Component({
@@ -57,15 +63,78 @@ interface MovementTableData extends Movement {
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  selectedPeriod: Period | null = null;
-  periods: Period[] = [];
+  periods = signal<Period[]>([]);
+  selectedPeriod = signal<Period | null>(null);
 
-  movementTableDatas: MovementTableData[] = [];
-  movements: Movement[] = [];
+  movements = signal<Movement[]>([]);
+  movementTableDatas: Signal<MovementTableData[]> = computed(() => {
+    const validationErrors = this.validation()?.validationErrors || [];
+
+    const potentialDuplicateMovementIds: string[] = validationErrors
+      .filter(isPotentialMovementDuplicateError)
+      .flatMap((error) => error.movementIds);
+
+    const unexpectedAmountMovementIds: string[] = validationErrors
+      .filter(isUnexpectedAmountError)
+      .map((error) => error.movementId);
+
+    return this.movements().map((movement) => {
+      const hasPotentialDuplicate = potentialDuplicateMovementIds.includes(
+        movement.id,
+      );
+
+      const hasUnexpectedAmount = unexpectedAmountMovementIds.includes(
+        movement.id,
+      );
+
+      return {
+        ...movement,
+        duplicateErrorTooltip: hasPotentialDuplicate
+          ? 'Potential duplicate'
+          : undefined,
+        amountErrorTooltip: hasUnexpectedAmount
+          ? 'Unexpected amount'
+          : undefined,
+      };
+    });
+  });
+
+  checkpoints = signal<Checkpoint[]>([]);
+  validation = signal<Validation | null>(null);
+
   movDisplayedColumns: string[] = ['date', 'wording', 'amount', 'delete'];
-  checkpoints: Checkpoint[] = [];
   cpDisplayedColumns: string[] = ['date', 'balance', 'delete'];
-  validation: Validation | null = null;
+
+  hasMissingMovementsError = computed(() => {
+    console.log('has missing mov');
+    return this.validation()?.validationErrors.some(
+      (error) => error.type === ValidationErrorType.MISSING_MOVEMENTS,
+    );
+  });
+
+  hasMissingCheckpointsError = computed(() => {
+    console.log('has missing cp');
+    return this.validation()?.validationErrors.some(
+      (error) => error.type === ValidationErrorType.MISSING_CHECKPOINT,
+    );
+  });
+
+  movementsTotalAmount = computed(() => {
+    return this.movements().reduce((acc, movement) => acc + movement.amount, 0);
+  });
+
+  hasBalanceMismatchError = computed(() => {
+    return this.validation()?.validationErrors.some(
+      (error) => error.type === ValidationErrorType.BALANCE_MISMATCH,
+    );
+  });
+
+  expectedBalance = computed(() => {
+    return this.checkpoints().reduce(
+      (acc, checkpoint) => acc + checkpoint.balance,
+      0,
+    );
+  });
 
   readonly dialog = inject(MatDialog);
 
@@ -74,7 +143,16 @@ export class AppComponent implements OnInit {
     private movementService: BankMovementService,
     private checkpointService: BalanceCheckpointService,
     private validationService: ValidationService,
-  ) {}
+  ) {
+    effect(() => {
+      if (this.selectedPeriod() !== null) {
+        this.loadPeriods();
+        this.loadMovements();
+        this.loadCheckpoints();
+        this.loadValidation();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadPeriods();
@@ -82,95 +160,79 @@ export class AppComponent implements OnInit {
 
   loadPeriods(): void {
     this.periodService.getAllPeriods().subscribe((periods) => {
-      this.periods = periods;
+      this.periods.set(periods);
     });
   }
 
-  loadMovements(): Observable<Movement[] | null> {
-    if (!this.selectedPeriod?.id) {
-      return of(null); // Retourne un observable vide si `selectedPeriod` est invalide
-    }
-    return this.movementService
-      .getMovementsForPeriod(this.selectedPeriod.id)
-      .pipe(
-        tap((movements) => {
-          this.movements = movements;
-          this.movementTableDatas = movements.map((m) => ({
-            ...m,
-            hasErrors: false,
-          }));
-        }),
-      );
+  loadMovements(): void {
+    this.movementService
+      .getMovementsForPeriod(this.selectedPeriod()!.id)
+      .subscribe((movements) => {
+        this.movements.set(movements);
+      });
   }
 
-  loadCheckpoints(): Observable<Checkpoint[] | null> {
-    if (!this.selectedPeriod?.id) {
-      return of(null); // Retourne un observable vide si `selectedPeriod` est invalide
-    }
-    return this.checkpointService
-      .getCheckpointsForPeriod(this.selectedPeriod.id)
-      .pipe(
-        tap((checkpoints) => {
-          this.checkpoints = checkpoints;
-        }),
-      );
+  loadCheckpoints(): void {
+    this.checkpointService
+      .getCheckpointsForPeriod(this.selectedPeriod()!.id)
+      .subscribe((checkpoints) => {
+        this.checkpoints.set(checkpoints);
+      });
   }
 
   loadValidation(): void {
-    if (!this.selectedPeriod?.id) {
-      return;
-    }
     this.validationService
-      .getValidationForPeriod(this.selectedPeriod.id)
+      .getValidationForPeriod(this.selectedPeriod()!.id)
       .pipe(
         mergeMap((validations) => {
           const currentValidation = validations.find((v) => !v.isHistorical);
           if (!currentValidation) {
             return this.validationService.createValidation(
-              this.selectedPeriod!.id,
+              this.selectedPeriod()!.id,
             );
           }
           return of(currentValidation);
         }),
       )
       .subscribe((validation) => {
-        this.validation = validation;
-        if (!validation.isValid) {
-          this.handleValidationErrors(validation.validationErrors);
-        }
+        this.validation.set(validation);
+        // if (!validation.isValid) {
+        //   this.handleValidationErrors(validation.validationErrors);
+        // }
       });
   }
 
-  onSelectPeriod(): void {
-    if (!this.selectedPeriod?.id) {
-      return;
-    }
+  onSelectPeriod(period: Period): void {
+    // if (!this.selectedPeriod?.id) {
+    //   return;
+    // }
 
-    forkJoin({
-      movements: this.loadMovements(),
-      checkpoints: this.loadCheckpoints(),
-    }).subscribe({
-      next: () => {
-        // Une fois que les deux appels sont terminés, on appelle loadValidation()
-        this.loadValidation();
-      },
-      error: (error) => {
-        console.error('Error loading movements or checkpoints:', error);
-      },
-    });
+    // forkJoin({
+    //   movements: this.loadMovements(),
+    //   checkpoints: this.loadCheckpoints(),
+    // }).subscribe({
+    //   next: () => {
+    //     // Une fois que les deux appels sont terminés, on appelle loadValidation()
+    //     this.loadValidation();
+    //   },
+    //   error: (error) => {
+    //     console.error('Error loading movements or checkpoints:', error);
+    //   },
+    // });
+    this.selectedPeriod.set(period);
   }
 
   onValidate(): void {
-    if (!this.selectedPeriod?.id) {
+    if (!this.selectedPeriod()?.id) {
       return;
     }
     this.validationService
-      .createValidation(this.selectedPeriod.id)
+      .createValidation(this.selectedPeriod()!.id)
       .subscribe((validation) => {
-        this.validation = validation;
+        this.validation.set(validation);
 
         if (!validation.isValid) {
-          this.handleValidationErrors(validation.validationErrors);
+          // this.handleValidationErrors(validation.validationErrors);
         }
       });
   }
@@ -187,7 +249,7 @@ export class AppComponent implements OnInit {
 
   onAddMovement(): void {
     const addMovDialogRef = this.dialog.open(AddMovementComponent, {
-      data: { period: this.selectedPeriod },
+      data: { period: this.selectedPeriod() },
     });
 
     addMovDialogRef.afterClosed().subscribe((result: CreateBankMovementDto) => {
@@ -199,7 +261,7 @@ export class AppComponent implements OnInit {
 
   onAddCheckpoint(): void {
     const addCheckpointDialogRef = this.dialog.open(AddCheckpointComponent, {
-      data: { period: this.selectedPeriod },
+      data: { period: this.selectedPeriod() },
     });
 
     addCheckpointDialogRef
@@ -214,8 +276,11 @@ export class AppComponent implements OnInit {
   onDeleteMovement(movementId: string): void {
     this.movementService.deleteMovement(movementId).subscribe({
       next: () => {
-        // Une fois le mouvement supprimé, recharge les mouvements
-        this.loadMovements().subscribe();
+        // on supprime le mouvement de la liste des mouvements
+        this.movements.update((movements) => {
+          return movements.filter((m) => m.id !== movementId);
+        });
+        this.createValidation();
       },
       error: (error) => {
         console.error('Error deleting movement:', error);
@@ -224,21 +289,13 @@ export class AppComponent implements OnInit {
   }
 
   addMovement(createBankMovementDto: CreateBankMovementDto) {
-    if (!this.selectedPeriod?.id) {
-      return;
-    }
-
     this.movementService
-      .createMovement(this.selectedPeriod.id, createBankMovementDto)
-      .pipe(
-        switchMap((createdMovement) => {
-          return this.validationService.createValidation(
-            this.selectedPeriod!.id,
-          );
-        }),
-        switchMap(() => this.loadMovements()),
-      )
+      .createMovement(this.selectedPeriod()!.id, createBankMovementDto)
       .subscribe({
+        next: (createdMovement) => {
+          this.movements.update((movements) => [...movements, createdMovement]);
+          this.createValidation();
+        },
         error: (error) => {
           console.error('Error creating movement:', error);
         },
@@ -248,7 +305,11 @@ export class AppComponent implements OnInit {
   onDeleteCheckpoint(checkpointId: string): void {
     this.checkpointService.deleteCheckpoint(checkpointId).subscribe({
       next: () => {
-        this.loadCheckpoints();
+        // on supprime le checkpoint de la liste des checkpoints
+        this.checkpoints.update((checkpoints) => {
+          return checkpoints.filter((c) => c.id !== checkpointId);
+        });
+        this.createValidation();
       },
       error: (error) => {
         console.error('Error deleting checkpoint:', error);
@@ -258,10 +319,14 @@ export class AppComponent implements OnInit {
 
   addCheckpoint(createBalanceCheckpointDto: CreateBalanceCheckpointDto): void {
     this.checkpointService
-      .createCheckpoint(this.selectedPeriod!.id, createBalanceCheckpointDto)
+      .createCheckpoint(this.selectedPeriod()!.id, createBalanceCheckpointDto)
       .subscribe({
-        next: () => {
-          this.loadCheckpoints();
+        next: (createdCheckpoint) => {
+          this.checkpoints.update((checkpoints) => [
+            ...checkpoints,
+            createdCheckpoint,
+          ]);
+          this.createValidation();
         },
         error: (error) => {
           console.error('Error creating checkpoint:', error);
@@ -272,8 +337,8 @@ export class AppComponent implements OnInit {
   addPeriod(createPeriodDto: CreatePeriodDto): void {
     this.periodService.createPeriod(createPeriodDto).subscribe({
       next: (createdPeriod) => {
-        this.periods.push(createdPeriod);
-        this.selectedPeriod = createdPeriod;
+        // this.periods.update((periods) => [...periods, createdPeriod]);
+        this.selectedPeriod.set(createdPeriod);
       },
       error: (error) => {
         console.error('Error creating period:', error);
@@ -281,52 +346,16 @@ export class AppComponent implements OnInit {
     });
   }
 
-  handleValidationErrors(validationErrors: ValidationError[]): void {
-    if (validationErrors.length > 0) {
-      validationErrors.forEach((error) => {
-        if (isPotentialMovementDuplicateError(error)) {
-          const movementIds = error.movementIds;
-          const duplicateErrorTooltip = `Potential duplicate movement`;
-          this.movementTableDatas = this.movementTableDatas.map((m) => {
-            if (movementIds.includes(m.id)) {
-              return { ...m, duplicateErrorTooltip };
-            }
-            return m;
-          });
-        }
-        if (isUnexpectedAmountError(error)) {
-          const movementId = error.movementId;
-          const amountErrorTooltip = `Unexpected amount for movement`;
-          this.movementTableDatas = this.movementTableDatas.map((m) => {
-            if (m.id === movementId) {
-              return { ...m, amountErrorTooltip };
-            }
-            return m;
-          });
-        }
-      });
-    }
-  }
-
-  hasMissingMovementsError(): boolean {
-    return this.validation!.validationErrors.some(
-      (error) => error.type === ValidationErrorType.MISSING_MOVEMENTS,
-    );
-  }
-  hasMissingCheckpointsError(): boolean {
-    return this.validation!.validationErrors.some(
-      (error) => error.type === ValidationErrorType.MISSING_CHECKPOINT,
-    );
-  }
-
   createValidation(): void {
-    this.validationService.createValidation(this.selectedPeriod!.id).subscribe({
-      next: (validation) => {
-        this.validation = validation;
-      },
-      error: (error) => {
-        console.error('Error creating validation:', error);
-      },
-    });
+    this.validationService
+      .createValidation(this.selectedPeriod()!.id)
+      .subscribe({
+        next: (validation) => {
+          this.validation.set(validation);
+        },
+        error: (error) => {
+          console.error('Error creating validation:', error);
+        },
+      });
   }
 }
