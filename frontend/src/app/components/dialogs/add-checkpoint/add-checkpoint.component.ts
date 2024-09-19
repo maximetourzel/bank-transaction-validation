@@ -1,25 +1,24 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { Period } from '../../../models/period';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { CreateBankMovementDto } from '../../../models/dto/create-bank-movement-dto';
 
 export interface AddMovementDialogData {
   period: Period;
 }
 
 @Component({
-  selector: 'app-add-movement',
+  selector: 'app-add-checkpoint',
   standalone: true,
   imports: [
     MatCardModule,
@@ -29,29 +28,26 @@ export interface AddMovementDialogData {
     MatDatepickerModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './add-movement.component.html',
-  styleUrl: './add-movement.component.scss',
+  templateUrl: './add-checkpoint.component.html',
+  styleUrl: './add-checkpoint.component.scss',
 })
-export class AddMovementComponent {
-  readonly dialogRef = inject(MatDialogRef<AddMovementComponent>);
-
+export class AddCheckpointComponent {
+  readonly dialogRef = inject(MatDialogRef<AddCheckpointComponent>);
   readonly data = inject<AddMovementDialogData>(MAT_DIALOG_DATA);
-  newMovementForm = new FormGroup({
-    wording: new FormControl('', Validators.required),
-    amount: new FormControl(0, Validators.required),
+  newCheckpointForm = new FormGroup({
     date: new FormControl('', Validators.required),
+    balance: new FormControl(0, Validators.required),
   });
 
   onSubmit(): void {
-    if (this.newMovementForm.valid) {
-      const createBankMovement: CreateBankMovementDto = {
-        wording: this.newMovementForm.value.wording!,
-        amount: this.newMovementForm.value.amount!,
-        date: new Date(this.newMovementForm.value.date!)
+    if (this.newCheckpointForm.valid) {
+      const newCheckpoint = {
+        date: new Date(this.newCheckpointForm.value.date!)
           .toISOString()
           .split('T')[0],
+        balance: this.newCheckpointForm.value.balance,
       };
-      this.dialogRef.close(createBankMovement);
+      this.dialogRef.close(newCheckpoint);
     }
   }
 

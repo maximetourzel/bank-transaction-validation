@@ -1,11 +1,43 @@
-@use '@angular/material' as mat;
 .main-container {
-    padding: 5%;
+    padding: 3rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1.5rem;
 
-    .validation-container {
-        
+    .period-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
+
+    .movements-card {
+        gap: 1rem;
+        padding: 1rem;
+        .movements-card-header {
+            gap: 0.5rem;
+            align-items: center;
+        }
+    }
+
+    .checkpoints-card {
+        gap: 1rem;
+        padding: 1rem;
+        .checkpoints-card-header {
+            gap: 0.5rem;
+            align-items: center;
+        }
+    }
+
+    .date-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem
+    }
+    .amount-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem
+    }
+
+    
 }

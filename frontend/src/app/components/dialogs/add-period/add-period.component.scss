@@ -1,0 +1,15 @@
+.new-period-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    .new-period-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .new-period-card-actions {
+        display: flex;
+        justify-content: space-between;
+    }
+}

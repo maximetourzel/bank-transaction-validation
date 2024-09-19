@@ -1,21 +1,17 @@
-<mat-card class="new-movement-card">
+<mat-card class="new-checkpoint-card">
   <mat-card-header>
-    <mat-card-title>Add new bank movement</mat-card-title>
+    <mat-card-title>Add new checkpoint</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <form [formGroup]="newMovementForm" class="new-movement-form">
-      <mat-form-field>
-        <mat-label>Wording</mat-label>
-        <input matInput formControlName="wording" />
-      </mat-form-field>
+    <form [formGroup]="newCheckpointForm" class="new-checkpoint-form">
       <mat-form-field floatLabel="always">
-        <mat-label>Amount</mat-label>
+        <mat-label>Balance</mat-label>
         <input
           matInput
           type="number"
           class="amount-input"
           placeholder="0"
-          formControlName="amount"
+          formControlName="balance"
         />
         <span matTextSuffix>€&nbsp;</span>
       </mat-form-field>
@@ -37,8 +33,8 @@
       </mat-form-field>
     </form>
   </mat-card-content>
-  <mat-card-actions class="new-movement-card-actions">
+  <mat-card-actions class="new-checkpoint-card-actions">
     <button mat-flat-button (click)="onSubmit()">Create</button>
-    <button mat-flat-button color="accent" (click)="onClose()">Close</button>
+    <button mat-flat-button color="warn" (click)="onClose()">Close</button>
   </mat-card-actions>
 </mat-card>

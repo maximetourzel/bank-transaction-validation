@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Movement } from '../../models/movement';
 import { environment } from '../../../environments/environments';
+import { CreateBankMovementDto } from '../../models/dto/create-bank-movement-dto';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +13,14 @@ export class BankMovementService {
 
   constructor(private http: HttpClient) {}
 
-  createMovement(movement: Movement): Observable<Movement> {
-    return this.http.post<Movement>(`${this.apiUrl}/movements`, movement);
+  createMovement(
+    periodId: string,
+    createBankMovementDto: CreateBankMovementDto,
+  ): Observable<Movement> {
+    return this.http.post<Movement>(
+      `${this.apiUrl}/periods/${periodId}/movements`,
+      createBankMovementDto,
+    );
   }
 
   getMovementsForPeriod(periodId: string): Observable<Movement[]> {

@@ -1,21 +1,32 @@
 <div class="main-container">
-  <mat-form-field>
-    <mat-label>Select period</mat-label>
-    <mat-select
-      [(value)]="selectedPeriodId"
-      (selectionChange)="onSelectPeriod()"
-    >
-      <mat-option></mat-option>
-      @for (period of periods; track period.id) {
-        <mat-option [value]="period.id"
-          >{{ period.year }} - {{ period.month }}</mat-option
-        >
-      }
-    </mat-select>
-  </mat-form-field>
+  <div class="period-container">
+    <mat-form-field>
+      <mat-label>Select period</mat-label>
+      <mat-select
+        [(value)]="selectedPeriod"
+        (selectionChange)="onSelectPeriod()"
+      >
+        <mat-option>None</mat-option>
+        @for (period of periods; track period.id) {
+          <mat-option [value]="period"
+            >{{ period.year }} - {{ period.month }}</mat-option
+          >
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button color="primary" (click)="onAddPeriod()">
+      <mat-icon>add</mat-icon>
+      Create period
+    </button>
+  </div>
 
   @if (validation) {
-    <mat-card class="validation-container">
+    <mat-card
+      class="validation-container"
+      [style]="{ color: validation.isValid ? 'green' : 'red' }"
+      appearance="outlined"
+    >
       <mat-card-content>
         @if (validation.isValid) {
           <p>Validation is valid</p>
@@ -29,54 +40,132 @@
     </mat-card>
   }
 
-  @if (selectedPeriodId) {
-    <div class="movement-table-container">
-      <h6>Movements</h6>
-      <button mat-flat-button (click)="onAddMovement()">Add movement</button>
-      <table mat-table [dataSource]="movements" class="mat-elevation-z8">
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
-          <td mat-cell *matCellDef="let element">{{ element.date }}</td>
-        </ng-container>
-        <ng-container matColumnDef="wording">
-          <th mat-header-cell *matHeaderCellDef>Wording</th>
-          <td mat-cell *matCellDef="let element">{{ element.wording }}</td>
-        </ng-container>
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef>Amount</th>
-          <td mat-cell *matCellDef="let element">{{ element.amount }}</td>
-        </ng-container>
-        <ng-container matColumnDef="delete">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let element">
-            <button
-              mat-icon-button
-              color="error"
-              (click)="onDeleteMovement(element.id)"
-            >
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="movDisplayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: movDisplayedColumns"></tr>
-      </table>
-    </div>
-    <div class="checkpoint-table-container">
-      <h6>Checkpoints</h6>
-      <table mat-table [dataSource]="checkpoints" class="mat-elevation-z8">
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
-          <td mat-cell *matCellDef="let element">{{ element.date }}</td>
-        </ng-container>
-        <ng-container matColumnDef="balance">
-          <th mat-header-cell *matHeaderCellDef>Balance</th>
-          <td mat-cell *matCellDef="let element">{{ element.balance }}</td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="cpDisplayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: cpDisplayedColumns"></tr>
-      </table>
-    </div>
+  @if (selectedPeriod) {
+    <!-- Movements -->
+    <mat-card appearance="outlined" class="movements-card">
+      <mat-card-header class="movements-card-header">
+        <mat-card-title>Movements</mat-card-title>
+        @if (hasMissingMovementsError()) {
+          <mat-icon matTooltip="Missing movements" color="warn">
+            error_outline
+          </mat-icon>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="movementTableDatas">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="date-cell">
+                {{ element.date }}
+                @if (element.duplicateErrorTooltip) {
+                  <mat-icon
+                    matTooltip="{{ element.duplicateErrorTooltip }}"
+                    color="warn"
+                  >
+                    error
+                  </mat-icon>
+                }
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="wording">
+            <th mat-header-cell *matHeaderCellDef>Wording</th>
+            <td mat-cell *matCellDef="let element">{{ element.wording }}</td>
+          </ng-container>
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="amount-cell">
+                {{ element.amount }}
+                @if (element.amountErrorTooltip) {
+                  <mat-icon
+                    matTooltip="{{ element.amountErrorTooltip }}"
+                    color="warn"
+                  >
+                    error
+                  </mat-icon>
+                }
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+              <button
+                mat-icon-button
+                color="warn"
+                class="button-error"
+                (click)="onDeleteMovement(element.id)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="movDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: movDisplayedColumns"></tr>
+          <tr *matNoDataRow>
+            No movements
+          </tr>
+        </table>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-flat-button (click)="onAddMovement()">
+          <mat-icon>add</mat-icon>
+          Add movement
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Checkpoints -->
+    <mat-card appearance="outlined" class="checkpoints-card">
+      <mat-card-header class="checkpoints-card-header">
+        <mat-card-title>Checkpoints</mat-card-title>
+        @if (hasMissingMovementsError()) {
+          <mat-icon matTooltip="Missing movements" color="warn">
+            error_outline
+          </mat-icon>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="checkpoints">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let element">{{ element.date }}</td>
+          </ng-container>
+          <ng-container matColumnDef="balance">
+            <th mat-header-cell *matHeaderCellDef>Balance</th>
+            <td mat-cell *matCellDef="let element">{{ element.balance }}</td>
+          </ng-container>
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+              <button
+                mat-icon-button
+                color="warn"
+                class="button-error"
+                (click)="onDeleteCheckpoint(element.id)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="cpDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: cpDisplayedColumns"></tr>
+          <tr *matNoDataRow>
+            No checkpoints
+          </tr>
+        </table>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-flat-button (click)="onAddCheckpoint()">
+          <mat-icon>add</mat-icon>
+          Add checkpoint
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Validate -->
     <button mat-flat-button (click)="onValidate()">Validate</button>
   }
 </div>

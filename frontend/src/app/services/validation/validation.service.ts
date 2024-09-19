@@ -18,4 +18,10 @@ export class ValidationService {
       {},
     );
   }
+
+  getValidationForPeriod(periodId: string): Observable<Validation[]> {
+    return this.http.get<Validation[]>(
+      `${this.apiUrl}/periods/${periodId}/validations`,
+    );
+  }
 }

@@ -1,9 +1,9 @@
-.new-movement-card {
+.new-checkpoint-card {
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 20px;
-    .new-movement-form {
+    .new-checkpoint-form {
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -20,7 +20,7 @@
         -moz-appearance: textfield;
         }
     }
-    .new-movement-card-actions {
+    .new-checkpoint-card-actions {
         display: flex;
         justify-content: space-between;
     }
