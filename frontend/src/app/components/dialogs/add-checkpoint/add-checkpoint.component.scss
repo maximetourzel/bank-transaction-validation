@@ -1,0 +1,27 @@
+.new-checkpoint-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    .new-checkpoint-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        // Remove arrow
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        }
+        /* Firefox */
+        input[type=number] {
+        -moz-appearance: textfield;
+        }
+    }
+    .new-checkpoint-card-actions {
+        display: flex;
+        justify-content: space-between;
+    }
+}
