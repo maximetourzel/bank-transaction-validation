@@ -17,6 +17,10 @@
       Create period
     </button>
 
+    <h4 class="selected-period">
+      {{ selectedPeriod()?.month | titlecase }} {{ selectedPeriod()?.year }}
+    </h4>
+
     @if (validation()) {
       <mat-card
         class="validation-container"
@@ -30,12 +34,6 @@
           } @else {
             <mat-icon>close</mat-icon>
             <p>Synchronisation failed</p>
-
-            <!-- <mat-menu #menu="matMenu">
-              @for (error of validation()!.validationErrors; track $index) {
-                <p mat-menu-item>{{ error.message }}</p>
-              }
-            </mat-menu> -->
           }
         </mat-card-content>
       </mat-card>
@@ -208,7 +206,5 @@
         </button>
       </mat-card-actions>
     </mat-card>
-
-    <!-- <button mat-flat-button (click)="onValidate()">Validate</button> -->
   }
 </div>

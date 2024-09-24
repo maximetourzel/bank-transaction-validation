@@ -12,6 +12,9 @@
         gap: 1rem;
         flex: 1 1 100%;
         align-self: flex-start;
+        .selected-period {
+            margin: auto;
+        }
         .validation-container {
             margin-left: auto;
             .validation-card-content {
@@ -67,20 +70,18 @@
         align-items: center;
         gap: 0.5rem;
     }
-
-    
 }
 
 
 tr.mat-mdc-footer-row {
     font-weight: bold;
-  }
+}
 
 .mat-mdc-table-sticky-border-elem-top {
     border-bottom: 2px solid #000;
-  }
+}
   
   
-  .mat-mdc-table-sticky-border-elem-bottom {
+.mat-mdc-table-sticky-border-elem-bottom {
     border-top: 2px solid #000;
-  }
+}
