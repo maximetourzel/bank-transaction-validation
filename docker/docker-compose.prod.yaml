@@ -1,0 +1,58 @@
+services:
+  # PostgreSQL for production
+  db:
+    image: postgres:15
+    container_name: bank_sync_postgres_prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bank_sync_db_prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - bank_network-prod
+
+  # API Service
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: bank_sync_api_prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: bank_sync_db_prod
+    networks:
+      - bank_network-prod
+    volumes:
+      - ../api/.env.production:/usr/src/app/.env
+
+  # Service pour le frontend (Angular)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: bank_sync_frontend_prod
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/usr/src/app
+    networks:
+      - bank_network-prod
+
+networks:
+  bank_network-prod:
+    driver: bridge
+
+volumes:
+  postgres_prod_data:

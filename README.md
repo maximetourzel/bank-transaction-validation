@@ -2,7 +2,7 @@
 
 [![Dougs Logo](https://cdn-images.welcometothejungle.com/qAwE90kqjR9uItnrfyPK8vuz4lfHMLAexVOCIzjD1ZE/rs:auto:2000:450:/g:fp:0:0.5/q:85/czM6Ly93dHRqLXByb2R1Y3Rpb24vdXBsb2Fkcy93ZWJzaXRlX29yZ2FuaXphdGlvbi9jb3Zlcl9pbWFnZS93dHRqX2ZyL2ZyLWI5MDg3NTk2LTU4NzEtNDkwMi1hMDQ3LTUwMTE0NWM5NzU4NS5qcGc)](https://www.dougs.fr/)
 
-This project is developed as part of a technical test for an interview with **Dougs**, a French online accounting firm. The objective of this test is to demonstrate the ability to design and implement a bank synchronization system using **NestJS** technology. The project includes a backend API to handle bank movements and validations, a frontend (currently in development), and a Docker setup for easy development and testing environments.
+This project is developed as part of a technical test for an interview with **Dougs**, a French online accounting firm. The objective of this test is to demonstrate the ability to design and implement a bank synchronization system using **NestJS** technology. The project includes a backend API to handle bank movements and validations, a frontend using **Angular**, and a Docker setup for easy development and testing environments.
 
 ---
 
@@ -11,7 +11,7 @@ This project is developed as part of a technical test for an interview with **Do
 This project is a financial management platform that consists of the following components:
 
 - **API**: A NestJS-based backend handling bank synchronization, validations, movements, and balance checkpoints.
-- **Frontend**: An Angular application (currently under development) to interact with the API.
+- **Frontend**: An Angular application to interact with the API.
 - **Docker**: A setup using Docker Compose to provision essential services like PostgreSQL for development and testing, along with PgAdmin for database management.
 
 ## **Project Structure**
@@ -19,7 +19,7 @@ This project is a financial management platform that consists of the following c
 ```plaintext
 /
 ├── api/                        # Backend API built with NestJS
-├── frontend/                   # Frontend application in Angular (under development)
+├── frontend/                   # Frontend application in Angular
 ├── docker/                     # Docker Compose setup for database and other services
 │   ├── docker-compose.yaml     # Defines PostgreSQL, PgAdmin, and future services
 ```
@@ -36,22 +36,48 @@ The frontend, under development with Angular, will allow users to interact with 
 
 ## Docker Setup
 
-The Docker Compose setup currently includes:
+This project provides two Docker Compose configurations:
 
-- **PostgreSQL**: The database used for storing all financial data.
-- **PgAdmin**: A web-based interface for managing PostgreSQL databases.
-- **Future Expansion**: The Docker setup will be expanded to include the Angular frontend as a service.
+1. **Development Environment** (`docker-compose.dev.yml`):
+   - Sets up the following containers:
+     - **PostgreSQL** for development (port 5432)
+     - **PostgreSQL** for e2e testing (port 5434)
+     - **pgAdmin** for managing the databases (port 5050)
+     - **SonarQube** for code quality analysis (port 9000)
 
-To set up the development environment with Docker, run:
+2. **Production/Build Environment** (`docker-compose.prod.yml`):
+   - Sets up:
+     - **PostgreSQL** for the production environment
+     - **API** container that builds and runs the API connected to the PostgreSQL container
 
-1. Navigate to the ```docker/``` directory:
-2. Start the containers:
-    ```bash
-    docker-compose up -d
-    ```
-    This command starts the PostgreSQL (dev and test) and PgAdmin services in the background.
+### Development Setup
 
-3. PostgreSQL for developpement will be running at ```localhost:5432``` and PostgreSQL for tests at ```localhost:5434```
+To bring up the development environment, including multiple PostgreSQL containers, pgAdmin, and SonarQube, use the following command:
+
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+After running the command, the services will be available on the following ports:
+
+- **PostgreSQL** (dev) on `localhost:5432`
+- **PostgreSQL** (test) on `localhost:5434`
+- **pgAdmin** on `localhost:5050`
+- **SonarQube** on `localhost:9000`
+
+### Production Setup
+
+To bring up the production environment with the API and PostgreSQL, use:
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+This will set up:
+
+- **PostgreSQL** for production on port `5432`
+- **API** on port `3000`
+- **Frontend** on port `4200`
+
 
 # Getting Started
 
